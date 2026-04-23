@@ -70,6 +70,8 @@ export async function POST(req: Request) {
       role: values.role,
       accessRole: values.accessRole,
       workingType: values.workingType,
+      workingMode: values.workingMode,
+      officeLocation: values.officeLocation || "",
       address: {
         currentAddress: values.currentAddress,
         permanentAddress: values.permanentAddress,

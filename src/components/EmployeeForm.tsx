@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { employeeSchema, type EmployeeFormValues } from "@/lib/employeeSchema";
-import { ACCESS_ROLES, WORKING_TYPES, type Employee } from "@/types/employee";
+import { ACCESS_ROLES, WORKING_MODES, WORKING_TYPES, type Employee } from "@/types/employee";
 
 type Props = {
   mode: "create" | "edit";
@@ -61,6 +61,8 @@ function buildDefaults(initial?: Employee): EmployeeFormValues {
       role: "Employee",
       accessRole: "Employee",
       workingType: "Full Time",
+      workingMode: "Work From Home",
+      officeLocation: "",
       currentAddress: "",
       permanentAddress: "",
       workingLocation: "",
@@ -84,6 +86,8 @@ function buildDefaults(initial?: Employee): EmployeeFormValues {
     role: initial.role,
     accessRole: initial.accessRole,
     workingType: initial.workingType,
+    workingMode: initial.workingMode || "Work From Home",
+    officeLocation: initial.officeLocation || "",
     currentAddress: initial.address.currentAddress,
     permanentAddress: initial.address.permanentAddress,
     workingLocation: initial.address.workingLocation,
@@ -137,6 +141,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
   });
 
   const reportingTLId = watch("reportingTLId");
+  const workingMode = watch("workingMode");
 
   function handleCategoryChange(cat: string) {
     setDeptCategory(cat);
@@ -334,6 +339,24 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             ))}
           </select>
         </Field>
+        <Field label="Working Mode" error={errors.workingMode?.message}>
+          <select className={`${fieldClass} truncate pr-8`} {...register("workingMode")}>
+            {WORKING_MODES.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode}
+              </option>
+            ))}
+          </select>
+        </Field>
+        {workingMode === "Office" && (
+          <Field label="Office Name / Location" error={errors.officeLocation?.message}>
+            <input
+              className={fieldClass}
+              placeholder="e.g. Noida Sector 62, Delhi HQ"
+              {...register("officeLocation")}
+            />
+          </Field>
+        )}
 
         <Field label="Assign Team Leader">
           <select

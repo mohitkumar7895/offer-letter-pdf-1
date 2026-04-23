@@ -1,4 +1,4 @@
-import type { AccessRole, Employee, EmployeeFormRole, WorkingType } from "@/types/employee";
+import type { AccessRole, Employee, EmployeeFormRole, WorkingMode, WorkingType } from "@/types/employee";
 
 type MongoEmployee = {
   _id: unknown;
@@ -10,6 +10,8 @@ type MongoEmployee = {
   role: EmployeeFormRole;
   accessRole: AccessRole;
   workingType: WorkingType;
+  workingMode: WorkingMode;
+  officeLocation?: string;
   address: {
     currentAddress: string;
     permanentAddress: string;
@@ -53,6 +55,8 @@ export function mapEmployee(doc: MongoEmployee): Employee {
     role: doc.role,
     accessRole: doc.accessRole,
     workingType: doc.workingType,
+    workingMode: doc.workingMode,
+    officeLocation: doc.officeLocation || "",
     address: {
       currentAddress: doc.address.currentAddress,
       permanentAddress: doc.address.permanentAddress,

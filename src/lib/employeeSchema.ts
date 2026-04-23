@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ACCESS_ROLES, EMPLOYEE_FORM_ROLES, WORKING_TYPES } from "@/types/employee";
+import { ACCESS_ROLES, EMPLOYEE_FORM_ROLES, WORKING_MODES, WORKING_TYPES } from "@/types/employee";
 
 const phoneRegex = /^\d{10}$/;
 const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
@@ -25,6 +25,8 @@ export const employeeSchema = z.object({
   role: z.enum(EMPLOYEE_FORM_ROLES),
   accessRole: z.enum(ACCESS_ROLES),
   workingType: z.enum(WORKING_TYPES),
+  workingMode: z.enum(WORKING_MODES),
+  officeLocation: z.string().trim().optional().or(z.literal("")),
   currentAddress: z.string().trim().min(5, "Current address is required"),
   permanentAddress: z.string().trim().min(5, "Permanent address is required"),
   workingLocation: z.string().trim().min(2, "Working location is required"),

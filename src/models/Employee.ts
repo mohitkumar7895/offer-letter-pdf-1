@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { ACCESS_ROLES, EMPLOYEE_FORM_ROLES, WORKING_TYPES } from "@/types/employee";
+import { ACCESS_ROLES, EMPLOYEE_FORM_ROLES, WORKING_MODES, WORKING_TYPES } from "@/types/employee";
 
 const UploadedFileSchema = new Schema(
   {
@@ -38,6 +38,13 @@ const EmployeeSchema = new Schema(
       enum: WORKING_TYPES,
       default: "Full Time",
     },
+    workingMode: {
+      type: String,
+      required: true,
+      enum: WORKING_MODES,
+      default: "Work From Home",
+    },
+    officeLocation: { type: String, default: "", trim: true },
     address: {
       currentAddress: { type: String, required: true, trim: true },
       permanentAddress: { type: String, required: true, trim: true },

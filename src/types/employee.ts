@@ -18,6 +18,9 @@ export const WORKING_TYPES = [
 
 export type WorkingType = (typeof WORKING_TYPES)[number];
 
+export const WORKING_MODES = ["Work From Home", "Office"] as const;
+export type WorkingMode = (typeof WORKING_MODES)[number];
+
 export type EmployeeFormRole = (typeof EMPLOYEE_FORM_ROLES)[number];
 export type AccessRole = (typeof ACCESS_ROLES)[number];
 
@@ -72,6 +75,8 @@ export type Employee = {
   role: EmployeeFormRole;
   accessRole: AccessRole;
   workingType: WorkingType;
+  workingMode: WorkingMode;
+  officeLocation?: string;
   address: EmployeeAddress;
   accountDetails: EmployeeAccountDetails;
   documents: EmployeeDocuments;
