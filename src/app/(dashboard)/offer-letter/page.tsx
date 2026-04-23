@@ -1,7 +1,7 @@
 import { getAuthFromCookies } from "@/lib/auth";
-import { PdfEditorShell } from "@/components/PdfEditorShell";
+import { OfferLetterClient } from "@/components/OfferLetterClient";
 
 export default async function OfferLetterPage() {
   const user = await getAuthFromCookies();
-  return <PdfEditorShell userRole={user?.role ?? null} />;
+  return <OfferLetterClient userRole={user?.role ?? null} />;
 }

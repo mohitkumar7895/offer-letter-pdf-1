@@ -20,9 +20,10 @@ const TEMPLATE_PATH = "/sample.pdf";
 
 type Props = {
   userRole?: AccessRole | null;
+  editId?: string | null;
 };
 
-export function PdfEditorShell({ userRole }: Props) {
+export function PdfEditorShell({ userRole, editId }: Props) {
   const [form, setForm] = useState<FormFields>(EMPTY_FORM);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
