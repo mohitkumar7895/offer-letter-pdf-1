@@ -29,6 +29,14 @@ export function AppSidebar({ initialTheme, userRole, mobileOpen, onCloseMobile }
   const onTls = pathname.startsWith("/tls");
   const onAttendance = pathname.startsWith("/attendance");
   const onExperienceLetter = pathname.startsWith("/experience-letter");
+  const onOther = pathname.startsWith("/other");
+  const [docsOpen, setDocsOpen] = useState(false);
+
+  useEffect(() => {
+    if (onEditor || onExperienceLetter || onOther) {
+      setDocsOpen(true);
+    }
+  }, [onEditor, onExperienceLetter, onOther]);
 
   return (
     <>
@@ -115,26 +123,6 @@ export function AppSidebar({ initialTheme, userRole, mobileOpen, onCloseMobile }
               Clients
             </Link>
             <Link
-              href="/offer-letter"
-              onClick={onCloseMobile}
-              className={`${itemBase} ${onEditor ? active : inactive}`}
-            >
-              <span
-                className="flex size-8 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
-                aria-hidden
-              >
-                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                  />
-                </svg>
-              </span>
-              Offer letter
-            </Link>
-            <Link
               href="/tls"
               onClick={onCloseMobile}
               className={`${itemBase} ${onTls ? active : inactive}`}
@@ -159,26 +147,91 @@ export function AppSidebar({ initialTheme, userRole, mobileOpen, onCloseMobile }
                 aria-hidden
               >
                 <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" />
                 </svg>
               </span>
               Employee Attendance
             </Link>
-            <Link
-              href="/experience-letter"
-              onClick={onCloseMobile}
-              className={`${itemBase} ${onExperienceLetter ? active : inactive}`}
+
+            <button
+              onClick={() => setDocsOpen(!docsOpen)}
+              className={`${itemBase} w-full justify-between ${docsOpen ? "text-slate-900 dark:text-white" : inactive}`}
             >
-              <span
-                className="flex size-8 items-center justify-center rounded-lg bg-pink-500/15 text-pink-700 dark:bg-pink-500/20 dark:text-pink-300"
-                aria-hidden
+              <div className="flex items-center gap-3">
+                <span
+                  className="flex size-8 items-center justify-center rounded-lg bg-slate-500/15 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400"
+                  aria-hidden
+                >
+                  <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                  </svg>
+                </span>
+                Documents
+              </div>
+              <svg
+                className={`size-4 transition-transform duration-200 ${docsOpen ? "rotate-180" : ""}`}
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </span>
-              Experience Letter
-            </Link>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {docsOpen && (
+              <div className="ml-4 flex flex-col gap-1 border-l border-slate-200 pl-4 dark:border-slate-800">
+                <Link
+                  href="/offer-letter"
+                  onClick={onCloseMobile}
+                  className={`${itemBase} ${onEditor ? active : inactive}`}
+                >
+                  <span
+                    className="flex size-8 items-center justify-center rounded-lg bg-indigo-500/15 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
+                    aria-hidden
+                  >
+                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                      />
+                    </svg>
+                  </span>
+                  Offer letter
+                </Link>
+                <Link
+                  href="/experience-letter"
+                  onClick={onCloseMobile}
+                  className={`${itemBase} ${onExperienceLetter ? active : inactive}`}
+                >
+                  <span
+                    className="flex size-8 items-center justify-center rounded-lg bg-pink-500/15 text-pink-700 dark:bg-pink-500/20 dark:text-pink-300"
+                    aria-hidden
+                  >
+                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </span>
+                  Experience Letter
+                </Link>
+                <Link
+                  href="/other"
+                  onClick={onCloseMobile}
+                  className={`${itemBase} ${onOther ? active : inactive}`}
+                >
+                  <span
+                    className="flex size-8 items-center justify-center rounded-lg bg-teal-500/15 text-teal-700 dark:bg-teal-500/20 dark:text-teal-300"
+                    aria-hidden
+                  >
+                    <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </span>
+                  Other
+                </Link>
+              </div>
+            )}
           </>
         )}
       </nav>
