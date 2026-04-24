@@ -10,10 +10,10 @@ interface Props {
 
 export const SalaryForm: React.FC<Props> = ({ data, onChange }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type } = e.target;
+    const { name, value, type, checked } = e.target;
     onChange({
       ...data,
-      [name]: type === "number" ? parseFloat(value) || 0 : value,
+      [name]: type === "checkbox" ? checked : type === "number" ? parseFloat(value) || 0 : value,
     });
   };
 
@@ -164,6 +164,23 @@ export const SalaryForm: React.FC<Props> = ({ data, onChange }) => {
               onChange={handleChange}
               className={inputClass}
             />
+          </label>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between rounded-xl bg-slate-50 p-4 dark:bg-slate-800/50">
+          <div>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white">PF Deduction (12%)</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Apply standard 12% provident fund deduction on base salary</p>
+          </div>
+          <label className="relative inline-flex cursor-pointer items-center">
+            <input
+              type="checkbox"
+              name="enablePF"
+              checked={data.enablePF || false}
+              onChange={handleChange}
+              className="peer sr-only"
+            />
+            <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-cyan-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-slate-700"></div>
           </label>
         </div>
       </div>

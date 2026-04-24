@@ -9,6 +9,7 @@ export interface SalaryStructure {
   otherDeductions: number;
   joiningDate?: string;
   leavingDate?: string;
+  enablePF?: boolean;
 }
 
 export interface SalaryBreakdown {
@@ -31,6 +32,7 @@ export const calculateSalary = (data: SalaryStructure): SalaryBreakdown => {
     overtime,
     taxPercentage,
     otherDeductions,
+    enablePF,
   } = data;
 
   // 1. Basic Per Day calculation
@@ -46,8 +48,8 @@ export const calculateSalary = (data: SalaryStructure): SalaryBreakdown => {
   const totalBonus = (bonus || 0) + (overtime || 0);
 
   // 5. Deductions
-  // PF is usually 12% of basic (assuming monthly salary is the base for PF calculation here)
-  const pfDeduction = monthlySalary * 0.12;
+  // PF is usually 12% of basic (only if enabled)
+  const pfDeduction = enablePF ? monthlySalary * 0.12 : 0;
   const taxDeduction = grossEarned * (taxPercentage / 100);
   const totalDeduction = pfDeduction + taxDeduction + (otherDeductions || 0);
 
