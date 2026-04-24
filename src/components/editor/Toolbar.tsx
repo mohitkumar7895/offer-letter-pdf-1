@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { type Editor } from "@tiptap/react";
+import "@tiptap/extension-highlight";
 import {
   Bold,
   Italic,
@@ -20,7 +21,9 @@ import {
   Redo,
   Image as ImageIcon,
   Highlighter,
-  Type
+  Type,
+  Check,
+  X
 } from "lucide-react";
 
 interface ToolbarProps {
@@ -29,6 +32,16 @@ interface ToolbarProps {
 }
 
 export function Toolbar({ editor, onImageClick }: ToolbarProps) {
+  const [showTextInput, setShowTextInput] = useState(false);
+  const [textToInsert, setTextToInsert] = useState("");
+  const textInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (showTextInput && textInputRef.current) {
+      textInputRef.current.focus();
+    }
+  }, [showTextInput]);
+
   if (!editor) {
     return null;
   }
@@ -55,11 +68,17 @@ export function Toolbar({ editor, onImageClick }: ToolbarProps) {
   
   const setHighlight = () => editor.chain().focus().toggleHighlight().run();
 
-  const handleInsertText = () => {
-    const text = window.prompt("Enter text to insert:");
-    if (text) {
-      editor.chain().focus().insertContent(text).run();
+  const submitTextInsert = () => {
+    if (textToInsert) {
+      editor.chain().focus().insertContent(textToInsert).run();
+      setTextToInsert("");
     }
+    setShowTextInput(false);
+  };
+
+  const handleInsertText = () => {
+    setShowTextInput(!showTextInput);
+    setTextToInsert("");
   };
 
   const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,7 +198,7 @@ export function Toolbar({ editor, onImageClick }: ToolbarProps) {
         </ToolbarBtn>
       </div>
 
-      <div className="flex items-center gap-2 border-l pl-3 ml-1 border-slate-200 dark:border-slate-700">
+      <div className="flex items-center gap-2 border-l pl-3 ml-1 border-slate-200 dark:border-slate-700 relative">
         <button
           onClick={handleInsertText}
           title="Insert Text"
@@ -189,6 +208,41 @@ export function Toolbar({ editor, onImageClick }: ToolbarProps) {
           <Type className="size-3.5" />
           Insert Text
         </button>
+
+        {showTextInput && (
+          <div className="absolute top-full left-0 mt-2 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl rounded-lg flex items-center gap-2 z-50 animate-in fade-in zoom-in duration-200">
+            <input
+              ref={textInputRef}
+              type="text"
+              value={textToInsert}
+              onChange={(e) => setTextToInsert(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  submitTextInsert();
+                } else if (e.key === "Escape") {
+                  setShowTextInput(false);
+                }
+              }}
+              placeholder="Enter text..."
+              className="px-2 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded bg-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 w-48 text-slate-800 dark:text-slate-200"
+            />
+            <button
+              onClick={submitTextInsert}
+              className="p-1.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded transition-colors"
+              title="Insert"
+            >
+              <Check className="size-4" />
+            </button>
+            <button
+              onClick={() => setShowTextInput(false)}
+              className="p-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded transition-colors"
+              title="Cancel"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+        )}
         <button
           onClick={onImageClick}
           title="Insert Image"
