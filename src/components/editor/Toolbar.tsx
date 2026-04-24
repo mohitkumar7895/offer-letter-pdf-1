@@ -19,7 +19,8 @@ import {
   Undo,
   Redo,
   Image as ImageIcon,
-  Highlighter
+  Highlighter,
+  Type
 } from "lucide-react";
 
 interface ToolbarProps {
@@ -53,6 +54,13 @@ export function Toolbar({ editor, onImageClick }: ToolbarProps) {
   const redo = () => editor.chain().focus().redo().run();
   
   const setHighlight = () => editor.chain().focus().toggleHighlight().run();
+
+  const handleInsertText = () => {
+    const text = window.prompt("Enter text to insert:");
+    if (text) {
+      editor.chain().focus().insertContent(text).run();
+    }
+  };
 
   const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     editor.chain().focus().setColor(event.target.value).run();
@@ -171,7 +179,10 @@ export function Toolbar({ editor, onImageClick }: ToolbarProps) {
         </ToolbarBtn>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 border-l pl-2 ml-1 border-slate-200 dark:border-slate-700">
+        <ToolbarBtn onClick={handleInsertText} title="Insert Text">
+          <Type className="size-4" />
+        </ToolbarBtn>
         <ToolbarBtn onClick={onImageClick} title="Insert Image">
           <ImageIcon className="size-4" />
         </ToolbarBtn>
