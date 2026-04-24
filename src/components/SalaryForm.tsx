@@ -29,7 +29,7 @@ export const SalaryForm: React.FC<Props> = ({ data, onChange }) => {
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Earnings & Attendance</h2>
         <div className="flex gap-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
-          {[26, 30, 31].map((d) => (
+          {[28, 29, 30, 31].map((d) => (
             <button
               key={d}
               onClick={() => setTotalDays(d)}
