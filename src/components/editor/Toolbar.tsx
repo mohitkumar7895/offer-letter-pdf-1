@@ -179,13 +179,25 @@ export function Toolbar({ editor, onImageClick }: ToolbarProps) {
         </ToolbarBtn>
       </div>
 
-      <div className="flex items-center gap-1 border-l pl-2 ml-1 border-slate-200 dark:border-slate-700">
-        <ToolbarBtn onClick={handleInsertText} title="Insert Text">
-          <Type className="size-4" />
-        </ToolbarBtn>
-        <ToolbarBtn onClick={onImageClick} title="Insert Image">
-          <ImageIcon className="size-4" />
-        </ToolbarBtn>
+      <div className="flex items-center gap-2 border-l pl-3 ml-1 border-slate-200 dark:border-slate-700">
+        <button
+          onClick={handleInsertText}
+          title="Insert Text"
+          type="button"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 dark:text-indigo-300 rounded-lg transition-colors border border-indigo-100 dark:border-indigo-800/50"
+        >
+          <Type className="size-3.5" />
+          Insert Text
+        </button>
+        <button
+          onClick={onImageClick}
+          title="Insert Image"
+          type="button"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-teal-50 hover:bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:hover:bg-teal-900/50 dark:text-teal-300 rounded-lg transition-colors border border-teal-100 dark:border-teal-800/50"
+        >
+          <ImageIcon className="size-3.5" />
+          Insert Image
+        </button>
       </div>
     </div>
   );
