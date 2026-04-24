@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import dynamic from "next/dynamic";
-import "react-quill-new/dist/quill.snow.css";
+import Editor from "./editor/Editor";
 import {
   Upload,
   Download,
@@ -23,8 +22,6 @@ import {
 } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-
-const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 
 type SavedItem = {
   id: string;
@@ -190,17 +187,7 @@ export default function OtherDocumentsClient() {
     }
   };
 
-  const modules = {
-    toolbar: [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      ["bold", "italic", "underline", "strike"],
-      [{ color: [] }, { background: [] }],
-      [{ list: "ordered" }, { list: "bullet" }],
-      [{ align: [] }],
-      ["link", "image"],
-      ["clean"],
-    ],
-  };
+  // Tiptap handles modules internally in Editor.tsx
 
   if (view === "create") {
     return (
@@ -329,14 +316,11 @@ export default function OtherDocumentsClient() {
                   </h3>
                 </div>
 
-                <div className="flex-1 min-h-[400px] border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden [&_.ql-toolbar]:border-none [&_.ql-toolbar]:border-b [&_.ql-toolbar]:border-slate-200 dark:[&_.ql-toolbar]:border-slate-700 [&_.ql-container]:border-none [&_.ql-editor]:min-h-[350px] [&_.ql-editor]:text-base">
-                  <ReactQuill
-                    theme="snow"
-                    value={content}
+                <div className="flex-1 flex flex-col min-h-[400px]">
+                  <Editor
+                    content={content}
                     onChange={setContent}
-                    modules={modules}
                     placeholder="Type your document content here..."
-                    className="h-full bg-white dark:bg-slate-900 dark:text-white"
                   />
                 </div>
               </div>
