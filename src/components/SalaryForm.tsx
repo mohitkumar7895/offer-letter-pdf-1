@@ -9,44 +9,82 @@ interface Props {
 }
 
 export const SalaryForm: React.FC<Props> = ({ data, onChange }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const handleMonthYearChange = (monthIdx: number, year: number) => {
+    // monthIdx is 0-based (0 for Jan, 1 for Feb...)
+    // Setting day to 0 in next month gives total days in current month
+    const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
+    onChange({ ...data, totalDays: daysInMonth });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
     onChange({
       ...data,
       [name]: type === "checkbox" ? checked : type === "number" ? parseFloat(value) || 0 : value,
     });
   };
 
-  const setTotalDays = (days: number) => {
-    onChange({ ...data, totalDays: days });
-  };
-
   const inputClass =
     "mt-1.5 block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold transition-all focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-cyan-400 dark:focus:ring-cyan-400/5 placeholder:text-slate-300 dark:placeholder:text-slate-700 shadow-sm";
 
+  const selectClass =
+    "mt-1.5 block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-bold transition-all focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-cyan-400 appearance-none shadow-sm cursor-pointer";
+
   return (
     <div className="space-y-10 rounded-[2.5rem] border border-slate-200/60 bg-white/70 p-8 sm:p-10 shadow-2xl backdrop-blur-2xl dark:border-slate-800/60 dark:bg-slate-900/40">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800/60 pb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 border-b border-slate-100 dark:border-slate-800/60 pb-8">
         <div>
           <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Earnings & Metrics</h2>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Configure individual payroll parameters</p>
         </div>
-        <div className="flex items-center gap-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800/50 p-1.5 border border-slate-200/50 dark:border-slate-700/50">
-          {[28, 29, 30, 31].map((d) => (
-            <button
-              key={d}
-              onClick={() => setTotalDays(d)}
-              className={`rounded-xl px-4 py-2 text-xs font-black transition-all ${
-                data.totalDays === d
-                  ? "bg-white text-slate-900 shadow-xl dark:bg-slate-700 dark:text-white"
-                  : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
-              }`}
+        
+        <div className="flex flex-wrap items-center justify-start sm:justify-end gap-3 sm:flex-1">
+          <div className="relative group">
+            <select
+              defaultValue={new Date().getMonth()}
+              onChange={(e) => handleMonthYearChange(parseInt(e.target.value), currentYear)}
+              className={`${selectClass} pr-10 min-w-[140px]`}
             >
-              {d}D
-            </button>
-          ))}
+              {months.map((m, i) => (
+                <option key={m} value={i}>{m}</option>
+              ))}
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-cyan-500 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
+
+          <div className="relative group">
+            <select
+              defaultValue={currentYear}
+              onChange={(e) => handleMonthYearChange(new Date().getMonth(), parseInt(e.target.value))}
+              className={`${selectClass} pr-10 min-w-[100px]`}
+            >
+              {years.map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </select>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-hover:text-cyan-500 transition-colors">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
+          
+          <div className="flex h-[52px] items-center px-5 rounded-2xl bg-cyan-500 text-white font-black text-sm shadow-lg shadow-cyan-500/20">
+            {data.totalDays} Days
+          </div>
         </div>
       </div>
+
+
 
       {/* Section: Period & Identity */}
       <div className="space-y-6">
