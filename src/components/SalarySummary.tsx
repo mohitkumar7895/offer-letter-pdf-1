@@ -32,21 +32,25 @@ export const SalarySummary: React.FC<Props> = ({
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-300">Net Payable Remittance</span>
           </div>
           
-          <div>
+          <div className="w-full px-4 overflow-hidden">
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Estimated Monthly Net</p>
-            <h2 className="text-5xl sm:text-6xl font-black tracking-tighter tabular-nums drop-shadow-2xl">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tighter tabular-nums drop-shadow-2xl break-words line-clamp-1">
               {formatCurrency(breakdown.netSalary)}
             </h2>
           </div>
 
           <div className="grid grid-cols-2 gap-3 w-full">
-            <div className="rounded-3xl bg-white/5 p-4 border border-white/5 backdrop-blur-xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Attendance</p>
-              <p className="text-lg font-black text-emerald-400">{breakdown.workedDays} <span className="text-[10px] font-bold text-slate-400">Days</span></p>
+            <div className="rounded-3xl bg-white/5 p-3 sm:p-4 border border-white/5 backdrop-blur-xl overflow-hidden text-left">
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">Attendance</p>
+              <p className="text-sm sm:text-base lg:text-lg font-black text-emerald-400 truncate">
+                {breakdown.workedDays} <span className="text-[9px] font-bold text-slate-400">Days</span>
+              </p>
             </div>
-            <div className="rounded-3xl bg-white/5 p-4 border border-white/5 backdrop-blur-xl">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Day Rate</p>
-              <p className="text-lg font-black text-cyan-400">{formatCurrency(Math.round(breakdown.perDaySalary))}</p>
+            <div className="rounded-3xl bg-white/5 p-3 sm:p-4 border border-white/5 backdrop-blur-xl overflow-hidden text-left">
+              <p className="text-[9px] font-black uppercase tracking-widest text-slate-500 mb-1">Day Rate</p>
+              <p className="text-sm sm:text-base lg:text-lg font-black text-cyan-400 truncate">
+                {formatCurrency(Math.round(breakdown.perDaySalary))}
+              </p>
             </div>
           </div>
         </div>
