@@ -22,34 +22,43 @@ export const SalaryForm: React.FC<Props> = ({ data, onChange }) => {
   };
 
   const inputClass =
-    "mt-1 block w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 text-sm transition-all focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-500/10 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:border-cyan-500 dark:focus:bg-slate-900";
+    "mt-1.5 block w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm font-semibold transition-all focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-cyan-400 dark:focus:ring-cyan-400/5 placeholder:text-slate-300 dark:placeholder:text-slate-700 shadow-sm";
 
   return (
-    <div className="space-y-6 rounded-[2rem] border border-slate-200 bg-white/70 p-8 shadow-xl backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/70">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Earnings & Attendance</h2>
-        <div className="flex gap-2 rounded-xl bg-slate-100 p-1 dark:bg-slate-800">
+    <div className="space-y-10 rounded-[2.5rem] border border-slate-200/60 bg-white/70 p-8 sm:p-10 shadow-2xl backdrop-blur-2xl dark:border-slate-800/60 dark:bg-slate-900/40">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800/60 pb-8">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Earnings & Metrics</h2>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Configure individual payroll parameters</p>
+        </div>
+        <div className="flex items-center gap-1.5 rounded-2xl bg-slate-100 dark:bg-slate-800/50 p-1.5 border border-slate-200/50 dark:border-slate-700/50">
           {[28, 29, 30, 31].map((d) => (
             <button
               key={d}
               onClick={() => setTotalDays(d)}
-              className={`rounded-lg px-4 py-1.5 text-xs font-bold transition-all ${
+              className={`rounded-xl px-4 py-2 text-xs font-black transition-all ${
                 data.totalDays === d
-                  ? "bg-white text-cyan-600 shadow-sm dark:bg-slate-700 dark:text-cyan-400"
-                  : "text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                  ? "bg-white text-slate-900 shadow-xl dark:bg-slate-700 dark:text-white"
+                  : "text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
               }`}
             >
-              {d} Days
+              {d}D
             </button>
           ))}
         </div>
       </div>
 
-      <div className="border-b border-slate-100 dark:border-slate-800 pb-6">
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-400">Employment Period</h3>
+      {/* Section: Period & Identity */}
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v14a2 2 0 002 2z"></path></svg>
+          </div>
+          <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Employment Cycle</h3>
+        </div>
         <div className="grid gap-6 md:grid-cols-2">
           <label className="block">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Joining Date</span>
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider">Joining Date</span>
             <input
               type="date"
               name="joiningDate"
@@ -59,7 +68,7 @@ export const SalaryForm: React.FC<Props> = ({ data, onChange }) => {
             />
           </label>
           <label className="block">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Leaving Date (Optional)</span>
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider">Relieving Date (Optional)</span>
             <input
               type="date"
               name="leavingDate"
@@ -71,108 +80,143 @@ export const SalaryForm: React.FC<Props> = ({ data, onChange }) => {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <label className="block">
-          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Monthly Salary (Base)</span>
-          <input
-            type="number"
-            name="monthlySalary"
-            value={data.monthlySalary || ""}
-            onChange={handleChange}
-            placeholder="e.g. 50000"
-            className={inputClass}
-          />
-        </label>
-
-        <label className="block">
-          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Paid Leaves</span>
-          <input
-            type="number"
-            name="paidLeaves"
-            value={data.paidLeaves || ""}
-            onChange={handleChange}
-            placeholder="Days"
-            className={inputClass}
-          />
-        </label>
-
-        <label className="block">
-          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Unpaid Leaves (LOP)</span>
-          <input
-            type="number"
-            name="unpaidLeaves"
-            value={data.unpaidLeaves || ""}
-            onChange={handleChange}
-            placeholder="Days"
-            className={inputClass}
-          />
-        </label>
-
-        <label className="block">
-          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Worked Days (Auto)</span>
-          <div className="mt-1 block w-full rounded-xl border border-slate-100 bg-slate-100/50 px-4 py-3 text-sm font-bold text-slate-600 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-400">
-            {data.totalDays - data.unpaidLeaves} Days
+      {/* Section: Core Salary & Attendance */}
+      <div className="space-y-6 border-t border-slate-100 dark:border-slate-800/60 pt-8">
+        <div className="flex items-center gap-3">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
           </div>
-        </label>
-      </div>
-
-      <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-400">Extra Earnings</h3>
-        <div className="grid gap-6 md:grid-cols-2">
-          <label className="block">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Bonus / Incentives</span>
-            <input
-              type="number"
-              name="bonus"
-              value={data.bonus || ""}
-              onChange={handleChange}
-              className={inputClass}
-            />
-          </label>
-          <label className="block">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Overtime Pay</span>
-            <input
-              type="number"
-              name="overtime"
-              value={data.overtime || ""}
-              onChange={handleChange}
-              className={inputClass}
-            />
-          </label>
+          <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Compensation & Attendance</h3>
         </div>
-      </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <label className="block md:col-span-2 lg:col-span-1">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider">Monthly Base Salary</span>
+            <div className="relative">
+              <span className="absolute left-4 top-[22px] text-slate-300 dark:text-slate-700 font-bold">₹</span>
+              <input
+                type="number"
+                name="monthlySalary"
+                value={data.monthlySalary || ""}
+                onChange={handleChange}
+                placeholder="0"
+                className={`${inputClass} pl-8 text-indigo-600 dark:text-indigo-400`}
+              />
+            </div>
+          </label>
 
-      <div className="border-t border-slate-100 dark:border-slate-800 pt-6">
-        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-400">Deductions</h3>
-        <div className="grid gap-6 md:grid-cols-2">
           <label className="block">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Tax (%) (TDS)</span>
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider">Paid Leaves (PL)</span>
             <input
               type="number"
-              name="taxPercentage"
-              value={data.taxPercentage || ""}
+              name="paidLeaves"
+              value={data.paidLeaves || ""}
               onChange={handleChange}
+              placeholder="0"
               className={inputClass}
             />
           </label>
+
           <label className="block">
-            <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Other Deductions</span>
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider">Unpaid Leaves (LOP)</span>
             <input
               type="number"
-              name="otherDeductions"
-              value={data.otherDeductions || ""}
+              name="unpaidLeaves"
+              value={data.unpaidLeaves || ""}
               onChange={handleChange}
-              className={inputClass}
+              placeholder="0"
+              className={`${inputClass} text-rose-500`}
             />
           </label>
         </div>
 
-        <div className="mt-4 flex items-center justify-between rounded-xl bg-slate-50 p-4 dark:bg-slate-800/50">
-          <div>
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white">PF Deduction (12%)</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Apply standard 12% provident fund deduction on base salary</p>
+        <div className="flex items-center gap-4 rounded-[1.5rem] bg-slate-50 dark:bg-slate-950 p-6 border border-slate-100 dark:border-slate-800/60">
+           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
+              <span className="text-lg font-black text-cyan-600 dark:text-cyan-400">{data.totalDays - data.unpaidLeaves}</span>
+           </div>
+           <div>
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">Effective Worked Days</p>
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-0.5">Calculated automatically from LOP metrics</p>
+           </div>
+        </div>
+      </div>
+
+      {/* Section: Incentives & Deductions */}
+      <div className="grid gap-10 md:grid-cols-2 border-t border-slate-100 dark:border-slate-800/60 pt-8">
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+            </div>
+            <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Incentives</h3>
           </div>
-          <label className="relative inline-flex cursor-pointer items-center">
+          <div className="grid gap-4">
+            <label className="block">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider">Performance Bonus</span>
+              <input
+                type="number"
+                name="bonus"
+                value={data.bonus || ""}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider">Overtime Allowance</span>
+              <input
+                type="number"
+                name="overtime"
+                value={data.overtime || ""}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </label>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4"></path></svg>
+            </div>
+            <h3 className="text-sm font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Deductions</h3>
+          </div>
+          <div className="grid gap-4">
+            <label className="block">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider">Tax Provision (TDS %)</span>
+              <input
+                type="number"
+                name="taxPercentage"
+                value={data.taxPercentage || ""}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 ml-1 uppercase tracking-wider">Miscellaneous Adjustments</span>
+              <input
+                type="number"
+                name="otherDeductions"
+                value={data.otherDeductions || ""}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="group relative overflow-hidden rounded-[2rem] bg-slate-900 dark:bg-slate-950 p-6 sm:p-8 text-white border border-white/5 shadow-2xl">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+               <h4 className="text-lg font-black tracking-tight">Statutory PF Deduction</h4>
+               <span className="px-2 py-0.5 rounded-md bg-white/10 text-[10px] font-black uppercase tracking-tighter text-cyan-400">Standard 12%</span>
+            </div>
+            <p className="text-xs text-slate-400 font-medium leading-relaxed max-w-sm">
+              Apply a fixed 12% provident fund deduction on the base salary according to regional labor compliance.
+            </p>
+          </div>
+          <label className="relative inline-flex cursor-pointer items-center shrink-0">
             <input
               type="checkbox"
               name="enablePF"
@@ -180,10 +224,13 @@ export const SalaryForm: React.FC<Props> = ({ data, onChange }) => {
               onChange={handleChange}
               className="peer sr-only"
             />
-            <div className="peer h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-cyan-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none dark:bg-slate-700"></div>
+            <div className="peer h-8 w-14 rounded-full bg-slate-800 after:absolute after:left-[4px] after:top-[4px] after:h-6 after:w-6 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-cyan-500 peer-checked:after:translate-x-6 peer-focus:outline-none transition-colors border border-white/5"></div>
           </label>
         </div>
+        {/* Abstract Background Effect */}
+        <div className="absolute top-0 right-0 h-32 w-32 bg-cyan-500/10 blur-[60px] pointer-events-none"></div>
       </div>
     </div>
   );
 };
+
