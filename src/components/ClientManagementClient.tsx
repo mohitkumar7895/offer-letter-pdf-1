@@ -160,9 +160,10 @@ export default function ClientManagementClient({
                       </div>
                       {client.domainDetails?.hostingProvider && (
                         <div className="text-xs inline-flex items-center mt-1.5 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
-                          Host: {client.domainDetails.hostingProvider}
+                          Host: {client.domainDetails.hostingCompany || client.domainDetails.hostingProvider}
                         </div>
                       )}
+
                     </td>
                     <td className="p-4 align-top">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(client.status)}`}>

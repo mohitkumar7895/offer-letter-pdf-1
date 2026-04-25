@@ -5,11 +5,14 @@ export interface IDomainDetails {
   domainName?: string | null;
   businessName?: string | null;
   category?: string | null;
-  renewalDate?: string | null; // Stored as ISO string or Date
-  domainRegistrar?: string | null;
+  renewalDate?: string | null; // This is used for Domain Expiry
+  domainRegistrar?: string | null; // This is used for Domain Company
+  hostingExpiryDate?: string | null;
+  hostingCompany?: string | null;
   hostingProvider?: HostingProvider | null;
   remarks?: string | null;
 }
+
 
 export interface IClient {
   _id?: string;

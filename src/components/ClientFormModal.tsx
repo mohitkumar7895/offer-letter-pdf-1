@@ -19,16 +19,18 @@ export function ClientFormModal({ isOpen, onClose, client, onSaved }: ClientForm
     city: "",
     state: "",
     status: "Pending",
-    domainDetails: {
-      domainName: "",
-      businessName: "",
-      category: "",
-      renewalDate: "",
-      domainRegistrar: "",
-      hostingProvider: "Provider",
-      remarks: "",
-    },
-  });
+      domainDetails: {
+        domainName: "",
+        businessName: "",
+        category: "",
+        renewalDate: "",
+        domainRegistrar: "",
+        hostingExpiryDate: "",
+        hostingCompany: "",
+        hostingProvider: "Provider",
+        remarks: "",
+      },
+    });
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +54,8 @@ export function ClientFormModal({ isOpen, onClose, client, onSaved }: ClientForm
           category: client.domainDetails?.category || "",
           renewalDate: client.domainDetails?.renewalDate ? new Date(client.domainDetails.renewalDate).toISOString().split('T')[0] : "",
           domainRegistrar: client.domainDetails?.domainRegistrar || "",
+          hostingExpiryDate: client.domainDetails?.hostingExpiryDate ? new Date(client.domainDetails.hostingExpiryDate).toISOString().split('T')[0] : "",
+          hostingCompany: client.domainDetails?.hostingCompany || "",
           hostingProvider: client.domainDetails?.hostingProvider || "Provider",
           remarks: client.domainDetails?.remarks || "",
         },
@@ -71,6 +75,8 @@ export function ClientFormModal({ isOpen, onClose, client, onSaved }: ClientForm
           category: "",
           renewalDate: "",
           domainRegistrar: "",
+          hostingExpiryDate: "",
+          hostingCompany: "",
           hostingProvider: "Provider",
           remarks: "",
         },
@@ -239,17 +245,27 @@ export function ClientFormModal({ isOpen, onClose, client, onSaved }: ClientForm
                     </div>
                     
                     <div className="group">
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-1 transition-colors group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400">Renewal Date</label>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-1 transition-colors group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400">Domain Expiry Date</label>
                       <input type="date" name="domainDetails.renewalDate" value={formData.domainDetails!.renewalDate || ""} onChange={handleChange} className="w-full rounded-2xl bg-white dark:bg-slate-800/80 p-3.5 border border-slate-200 dark:border-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all shadow-sm text-sm" />
                     </div>
 
                     <div className="group">
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-1 transition-colors group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400">Domain Registrar</label>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-1 transition-colors group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400">Domain Company</label>
                       <input type="text" name="domainDetails.domainRegistrar" value={formData.domainDetails!.domainRegistrar || ""} onChange={handleChange} placeholder="e.g. GoDaddy" className="w-full rounded-2xl bg-white dark:bg-slate-800/80 p-3.5 border border-slate-200 dark:border-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all shadow-sm" />
                     </div>
 
                     <div className="group">
-                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-1 transition-colors group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400">Hosting Provider</label>
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-1 transition-colors group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400">Hosting Expiry Date</label>
+                      <input type="date" name="domainDetails.hostingExpiryDate" value={formData.domainDetails!.hostingExpiryDate || ""} onChange={handleChange} className="w-full rounded-2xl bg-white dark:bg-slate-800/80 p-3.5 border border-slate-200 dark:border-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all shadow-sm text-sm" />
+                    </div>
+
+                    <div className="group">
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-1 transition-colors group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400">Hosting Company</label>
+                      <input type="text" name="domainDetails.hostingCompany" value={formData.domainDetails!.hostingCompany || ""} onChange={handleChange} placeholder="e.g. Hostinger" className="w-full rounded-2xl bg-white dark:bg-slate-800/80 p-3.5 border border-slate-200 dark:border-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all shadow-sm" />
+                    </div>
+
+                    <div className="col-span-2 group">
+                      <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 ml-1 transition-colors group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400">Hosting Provider Type</label>
                       <div className="relative">
                         <select name="domainDetails.hostingProvider" value={formData.domainDetails!.hostingProvider || "Provider"} onChange={handleChange} className="w-full rounded-2xl bg-white dark:bg-slate-800/80 p-3.5 pr-10 border border-slate-200 dark:border-slate-700 dark:text-white outline-none focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all shadow-sm appearance-none">
                           <option value="Provider">Company Provider</option>

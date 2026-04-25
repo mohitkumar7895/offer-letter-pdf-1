@@ -7,14 +7,17 @@ const DomainDetailsSchema = new Schema<IDomainDetails>({
   domainName: { type: String, trim: true },
   businessName: { type: String, trim: true },
   category: { type: String, trim: true },
-  renewalDate: { type: Date },
-  domainRegistrar: { type: String, trim: true },
+  renewalDate: { type: Date }, // Domain Expiry Date
+  domainRegistrar: { type: String, trim: true }, // Domain Company
+  hostingExpiryDate: { type: Date },
+  hostingCompany: { type: String, trim: true },
   hostingProvider: { 
     type: String, 
     enum: ['Provider', 'Others'],
   },
   remarks: { type: String, trim: true },
 }, { _id: false });
+
 
 const ClientSchema = new Schema<IClientDocument>(
   {
