@@ -15,6 +15,9 @@ export interface SalaryStructure {
 export interface SalaryBreakdown {
   perDaySalary: number;
   workedDays: number;
+  actualWorkedDays: number;
+  paidLeaves: number;
+  paidLeaveEarnings: number;
   grossEarned: number;
   totalBonus: number;
   pfDeduction: number;
@@ -28,6 +31,7 @@ export const calculateSalary = (data: SalaryStructure): SalaryBreakdown => {
     monthlySalary,
     totalDays,
     unpaidLeaves,
+    paidLeaves,
     bonus,
     overtime,
     taxPercentage,
@@ -36,19 +40,23 @@ export const calculateSalary = (data: SalaryStructure): SalaryBreakdown => {
   } = data;
 
   // 1. Basic Per Day calculation
-  const perDaySalary = monthlySalary / totalDays;
+  const perDaySalary = monthlySalary / (totalDays || 30);
 
-  // 2. Worked Days (Total - Unpaid)
-  const workedDays = Math.max(0, totalDays - unpaidLeaves);
+  // 2. Days Logic
+  // Actual worked days are days they were actually present
+  const actualWorkedDays = Math.max(0, totalDays - unpaidLeaves - paidLeaves);
+  // Total payable days include actual worked days + paid leaves
+  const workedDays = actualWorkedDays + paidLeaves;
 
-  // 3. Gross Earned (Based on worked days)
-  const grossEarned = perDaySalary * workedDays;
+  // 3. Earnings
+  const baseEarnings = perDaySalary * actualWorkedDays;
+  const paidLeaveEarnings = perDaySalary * paidLeaves;
+  const grossEarned = baseEarnings + paidLeaveEarnings;
 
   // 4. Bonus/Overtime
   const totalBonus = (bonus || 0) + (overtime || 0);
 
   // 5. Deductions
-  // PF is usually 12% of basic (only if enabled)
   const pfDeduction = enablePF ? monthlySalary * 0.12 : 0;
   const taxDeduction = grossEarned * (taxPercentage / 100);
   const totalDeduction = pfDeduction + taxDeduction + (otherDeductions || 0);
@@ -59,6 +67,9 @@ export const calculateSalary = (data: SalaryStructure): SalaryBreakdown => {
   return {
     perDaySalary: Number(perDaySalary.toFixed(2)),
     workedDays,
+    actualWorkedDays,
+    paidLeaves,
+    paidLeaveEarnings: Number(paidLeaveEarnings.toFixed(2)),
     grossEarned: Number(grossEarned.toFixed(2)),
     totalBonus,
     pfDeduction: Number(pfDeduction.toFixed(2)),

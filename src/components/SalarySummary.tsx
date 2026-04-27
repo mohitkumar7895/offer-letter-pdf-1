@@ -72,7 +72,8 @@ export const SalarySummary: React.FC<Props> = ({
         <div className="space-y-5">
           <div className="grid gap-4">
              {[
-               { label: "Gross Base Earned", value: breakdown.grossEarned, type: "neutral" },
+               { label: `Base Salary (${breakdown.actualWorkedDays} Days)`, value: breakdown.perDaySalary * breakdown.actualWorkedDays, type: "neutral" },
+               { label: `Paid Leave Pay (${breakdown.paidLeaves} Days)`, value: breakdown.paidLeaveEarnings, type: "positive" },
                { label: "Performance Bonus", value: breakdown.totalBonus, type: "positive" },
                { label: "Statutory PF (12%)", value: breakdown.pfDeduction, type: "negative" },
                { label: "Income Tax (TDS)", value: breakdown.taxDeduction, type: "negative" },
@@ -157,21 +158,22 @@ export const SalarySummary: React.FC<Props> = ({
                 <span>Description</span>
                 <span className="text-right">Amount (INR)</span>
              </div>
-             <div className="border-x-2 border-slate-900 divide-y-2 divide-slate-100">
-               {[
-                 { label: "Basic Base Earnings", val: breakdown.grossEarned },
-                 { label: "Performance Incentive / Bonus", val: breakdown.totalBonus },
-                 { label: "Overtime Allowance", val: (breakdown as any).overtime || 0 },
-                 { label: "Statutory PF Deduction (12%)", val: -breakdown.pfDeduction },
-                 { label: "Professional Tax / TDS", val: -breakdown.taxDeduction },
-                 { label: "Other Miscellaneous Deductions", val: -((breakdown as any).otherDeductions || 0) }
-               ].map((row, i) => row.val !== 0 && (
-                 <div key={i} className="grid grid-cols-2 p-4 text-sm font-bold">
-                    <span className="text-slate-600">{row.label}</span>
-                    <span className={`text-right tabular-nums ${row.val < 0 ? "text-rose-600" : ""}`}>{formatCurrency(row.val)}</span>
-                 </div>
-               ))}
-             </div>
+              <div className="border-x-2 border-slate-900 divide-y-2 divide-slate-100">
+                {[
+                  { label: `Basic Base Earnings (${breakdown.actualWorkedDays} Days)`, val: breakdown.perDaySalary * breakdown.actualWorkedDays },
+                  { label: `Paid Leave Earnings (${breakdown.paidLeaves} Days)`, val: breakdown.paidLeaveEarnings },
+                  { label: "Performance Incentive / Bonus", val: breakdown.totalBonus },
+                  { label: "Overtime Allowance", val: (breakdown as any).overtime || 0 },
+                  { label: "Statutory PF Deduction (12%)", val: -breakdown.pfDeduction },
+                  { label: "Professional Tax / TDS", val: -breakdown.taxDeduction },
+                  { label: "Other Miscellaneous Deductions", val: -((breakdown as any).otherDeductions || 0) }
+                ].map((row, i) => row.val !== 0 && (
+                  <div key={i} className="grid grid-cols-2 p-4 text-sm font-bold">
+                     <span className="text-slate-600">{row.label}</span>
+                     <span className={`text-right tabular-nums ${row.val < 0 ? "text-rose-600" : ""}`}>{formatCurrency(row.val)}</span>
+                  </div>
+                ))}
+              </div>
              <div className="grid grid-cols-2 bg-slate-900 text-white p-6">
                 <span className="text-xl font-black uppercase">Final Remittance</span>
                 <span className="text-3xl text-right font-black tabular-nums">{formatCurrency(breakdown.netSalary)}</span>

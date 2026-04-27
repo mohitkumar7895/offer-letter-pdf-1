@@ -169,11 +169,13 @@ export const SalaryForm: React.FC<Props> = ({ data, onChange }) => {
 
         <div className="flex items-center gap-4 rounded-[1.5rem] bg-slate-50 dark:bg-slate-950 p-6 border border-slate-100 dark:border-slate-800/60">
            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
-              <span className="text-lg font-black text-cyan-600 dark:text-cyan-400">{data.totalDays - data.unpaidLeaves}</span>
+              <span className="text-lg font-black text-cyan-600 dark:text-cyan-400">{(data.totalDays - data.unpaidLeaves - data.paidLeaves) + data.paidLeaves}</span>
            </div>
            <div>
-              <p className="text-xs font-black uppercase tracking-widest text-slate-400">Effective Worked Days</p>
-              <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-0.5">Calculated automatically from LOP metrics</p>
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">Total Payable Days</p>
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-0.5">
+                {data.totalDays - data.unpaidLeaves - data.paidLeaves} Worked + {data.paidLeaves} Paid Leaves
+              </p>
            </div>
         </div>
       </div>
