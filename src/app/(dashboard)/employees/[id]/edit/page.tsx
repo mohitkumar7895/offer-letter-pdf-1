@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { EmployeeForm } from "@/components/EmployeeForm";
 import type { Employee } from "@/types/employee";
 import type { EmployeeFormValues } from "@/lib/employeeSchema";
+import toast from "react-hot-toast";
 
 type EmployeeDetailResponse = { item?: Employee; error?: string };
 
@@ -14,7 +15,6 @@ export default function EditEmployeePage() {
   const [item, setItem] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -27,7 +27,7 @@ export default function EditEmployeePage() {
         }
         setItem(data.item);
       } catch (e) {
-        setMessage(e instanceof Error ? e.message : "Failed to load employee");
+        toast.error(e instanceof Error ? e.message : "Failed to load employee");
       } finally {
         setLoading(false);
       }
@@ -40,7 +40,6 @@ export default function EditEmployeePage() {
 
   async function onSubmit(payload: { values: EmployeeFormValues; files: FormData }) {
     setSaving(true);
-    setMessage(null);
 
     try {
       const res = await fetch(`/api/employees/${params.id}`, {
@@ -49,14 +48,15 @@ export default function EditEmployeePage() {
       });
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setMessage(data.error || "Failed to update employee");
+        toast.error(data.error || "Failed to update employee");
         return;
       }
 
+      toast.success("Updated Successfully");
       router.push("/employees");
       router.refresh();
     } catch {
-      setMessage("Failed to update employee");
+      toast.error("Failed to update employee");
     } finally {
       setSaving(false);
     }
@@ -67,7 +67,7 @@ export default function EditEmployeePage() {
   }
 
   if (!item) {
-    return <p className="p-6 text-sm text-red-700 dark:text-red-300">{message || "Employee not found"}</p>;
+    return <p className="p-6 text-sm text-red-700 dark:text-red-300">Employee not found</p>;
   }
 
   return (
@@ -82,7 +82,6 @@ export default function EditEmployeePage() {
             Update employee profile, permissions, and document details.
           </p>
         </header>
-        {message ? <p className="text-sm text-red-700 dark:text-red-300">{message}</p> : null}
         <EmployeeForm mode="edit" initial={item} loading={saving} onSubmit={onSubmit} />
       </div>
     </div>

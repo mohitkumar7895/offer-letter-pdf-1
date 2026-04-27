@@ -4,15 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { EmployeeForm } from "@/components/EmployeeForm";
 import type { EmployeeFormValues } from "@/lib/employeeSchema";
+import toast from "react-hot-toast";
 
 export default function NewEmployeePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
 
   async function onSubmit(payload: { values: EmployeeFormValues; files: FormData }) {
     setLoading(true);
-    setMessage(null);
 
     try {
       const res = await fetch("/api/employees", {
@@ -22,14 +21,15 @@ export default function NewEmployeePage() {
 
       const data = (await res.json()) as { error?: string };
       if (!res.ok) {
-        setMessage(data.error || "Failed to create employee");
+        toast.error(data.error || "Failed to create employee");
         return;
       }
 
+      toast.success("Employee created successfully");
       router.push("/employees");
       router.refresh();
     } catch {
-      setMessage("Failed to create employee");
+      toast.error("Failed to create employee");
     } finally {
       setLoading(false);
     }
@@ -47,7 +47,6 @@ export default function NewEmployeePage() {
             Fill professional profile, account details, and required documents.
           </p>
         </header>
-        {message ? <p className="text-sm text-red-700 dark:text-red-300">{message}</p> : null}
         <EmployeeForm mode="create" loading={loading} onSubmit={onSubmit} />
       </div>
     </div>
