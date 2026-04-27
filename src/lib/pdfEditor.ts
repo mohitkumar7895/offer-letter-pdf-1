@@ -5,7 +5,7 @@ import {
   type PDFFont,
   type PDFPage,
 } from "pdf-lib";
-import type { FormFields, OverlayOptions } from "./formTypes";
+import type { DocumentKind, FormFields, OverlayOptions } from "./formTypes";
 
 const BODY = 11;
 const NARROW = 10;
@@ -267,6 +267,7 @@ async function applyFormToPdf(
   doc: PDFDocument,
   data: FormFields,
   options: OverlayOptions,
+  kind: DocumentKind,
 ): Promise<void> {
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const pages = doc.getPages();
@@ -278,7 +279,7 @@ async function applyFormToPdf(
   const page5 = pages[4];
 
   if (!page2 || !page3 || !page5) {
-    throw new Error("Template must have at least 5 pages (offer letter format).");
+    throw new Error("Template must have at least 5 pages.");
   }
 
   const ref = data.refNo?.trim();
@@ -311,8 +312,18 @@ async function applyFormToPdf(
   const offerTopBaseline = 568.4 + oy;
   const offerMaxWidth = 500;
   const offerLineHeight = BODY * 1.12;
-  const offerPrefix =
-    "This has reference to your application for employment, the Company is pleased to offer you as on ";
+
+  let offerPrefix = "";
+  let salaryLine = "";
+
+  if (kind === "internship") {
+    offerPrefix = "This has reference to your application for Internship, the Company is pleased to offer you as on ";
+    salaryLine = `On Stipend of Rs – ${salary}/- for ${month} and there after depend on Performance with effect.`;
+  } else {
+    offerPrefix = "This has reference to your application for employment, the Company is pleased to offer you as on ";
+    salaryLine = `On Salary of Rs – ${salary}/- for ${month} month and there after depend on Performance with effect.`;
+  }
+
   const offerLines = wrapAfterFixedPrefix(
     font,
     offerPrefix,
@@ -321,7 +332,7 @@ async function applyFormToPdf(
     offerMaxWidth,
     6,
   );
-  const salaryLine = `On Salary of Rs – ${salary}/- for ${month} month and there after depend on Performance with effect.`;
+  
   const blockLines = appendSalarySameLine(
     font,
     offerLines,
@@ -377,13 +388,14 @@ export async function buildEditedPdfFromBytes(
   templateBytes: ArrayBuffer | Uint8Array,
   data: FormFields,
   options: OverlayOptions,
+  kind: DocumentKind,
 ): Promise<Uint8Array> {
   const bytes =
     templateBytes instanceof Uint8Array
       ? templateBytes
       : new Uint8Array(templateBytes);
   const doc = await PDFDocument.load(bytes);
-  await applyFormToPdf(doc, data, options);
+  await applyFormToPdf(doc, data, options, kind);
   return doc.save();
 }
 
@@ -392,13 +404,14 @@ export async function buildEditedPdf(
   templateUrl: string,
   data: FormFields,
   options: OverlayOptions,
+  kind: DocumentKind,
 ): Promise<Uint8Array> {
   const response = await fetch(templateUrl);
   if (!response.ok) {
     throw new Error(`Failed to load PDF template (${response.status})`);
   }
   const buf = await response.arrayBuffer();
-  return buildEditedPdfFromBytes(buf, data, options);
+  return buildEditedPdfFromBytes(buf, data, options, kind);
 }
 
 export function pdfUint8ToBlob(bytes: Uint8Array): Blob {

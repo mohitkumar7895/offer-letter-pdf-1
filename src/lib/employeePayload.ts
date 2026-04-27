@@ -6,12 +6,27 @@ function readString(formData: FormData, key: string): string {
   return value;
 }
 
+function readNumber(formData: FormData, key: string): number {
+  const value = formData.get(key);
+  if (!value) return 0;
+  const num = Number(value);
+  return isNaN(num) ? 0 : num;
+}
+
 export function readEmployeeValuesFromFormData(formData: FormData): EmployeeFormValues {
   return {
     employeeName: readString(formData, "employeeName"),
     mobileNumber: readString(formData, "mobileNumber"),
     alternateNumber: readString(formData, "alternateNumber"),
     email: readString(formData, "email"),
+    dob: readString(formData, "dob"),
+    maritalStatus: (readString(formData, "maritalStatus") || "Single") as EmployeeFormValues["maritalStatus"],
+    bloodGroup: readString(formData, "bloodGroup"),
+    offeredSalary: readNumber(formData, "offeredSalary"),
+    interviewDate: readString(formData, "interviewDate"),
+    joiningDate: readString(formData, "joiningDate"),
+    relationType: (readString(formData, "relationType") || "Father") as EmployeeFormValues["relationType"],
+    relativeName: readString(formData, "relativeName"),
     designation: readString(formData, "designation"),
     role: (readString(formData, "role") || "Employee") as EmployeeFormValues["role"],
     accessRole: readString(formData, "accessRole") as EmployeeFormValues["accessRole"],

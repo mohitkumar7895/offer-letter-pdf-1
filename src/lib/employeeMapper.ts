@@ -12,6 +12,14 @@ type MongoEmployee = {
   workingType: WorkingType;
   workingMode: WorkingMode;
   officeLocation?: string;
+  dob: string;
+  maritalStatus: string;
+  bloodGroup?: string;
+  offeredSalary?: number;
+  interviewDate?: string;
+  joiningDate: string;
+  relationType: string;
+  relativeName: string;
   address: {
     currentAddress: string;
     permanentAddress: string;
@@ -57,6 +65,14 @@ export function mapEmployee(doc: MongoEmployee): Employee {
     workingType: doc.workingType,
     workingMode: doc.workingMode,
     officeLocation: doc.officeLocation || "",
+    dob: doc.dob || "",
+    maritalStatus: (doc.maritalStatus as any) || "Single",
+    bloodGroup: doc.bloodGroup || "",
+    offeredSalary: doc.offeredSalary || 0,
+    interviewDate: doc.interviewDate || "",
+    joiningDate: doc.joiningDate || "",
+    relationType: (doc.relationType as any) || "Father",
+    relativeName: doc.relativeName || "",
     address: {
       currentAddress: doc.address.currentAddress,
       permanentAddress: doc.address.permanentAddress,

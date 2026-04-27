@@ -38,12 +38,18 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    const templatePath = path.join(process.cwd(), "public", "sample.pdf");
+    const getTemplatePath = (kind: string) => {
+      if (kind === "internship") return "internship.pdf";
+      if (kind === "other") return "other.pdf";
+      return "sample.pdf";
+    };
+
+    const templatePath = path.join(process.cwd(), "public", getTemplatePath(documentKind));
     const templateBytes = await readFile(templatePath);
     const pdf = await buildEditedPdfFromBytes(templateBytes, form, {
       offsetX,
       offsetY,
-    });
+    }, documentKind);
 
     const title =
       [form.refNo, form.name].filter(Boolean).join(" · ") ||

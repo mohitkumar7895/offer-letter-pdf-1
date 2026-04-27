@@ -1,7 +1,23 @@
-"use client";
+  "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { 
+  Users, 
+  UserPlus, 
+  Shield, 
+  Mail, 
+  Phone, 
+  ChevronDown, 
+  ChevronUp, 
+  UserCheck, 
+  ArrowRight, 
+  Search,
+  LayoutGrid,
+  Info,
+  Plus,
+  Minus
+} from "lucide-react";
 import type { Employee } from "@/types/employee";
 
 type Manager = {
@@ -152,254 +168,320 @@ export default function TeamLeaderManagementPage() {
   }
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <header className="rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/70">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-700 dark:text-cyan-300">
-            Admin / TL Setup
-          </p>
-          <h1 className="mt-2 text-3xl font-bold text-slate-900 dark:text-white">
-            Team Leader Management
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-            Create team leader accounts, assign employees, and keep team structure organized.
-          </p>
+    <div className="min-h-screen bg-slate-50/50 p-4 transition-colors duration-500 dark:bg-slate-950/50 sm:p-6 lg:p-8">
+      <div className="mx-auto max-w-7xl space-y-8">
+        {/* Header Section */}
+        <header className="relative overflow-hidden rounded-[2.5rem] border border-white bg-white/70 p-8 shadow-2xl shadow-slate-200/50 backdrop-blur-2xl dark:border-slate-800/50 dark:bg-slate-900/70 dark:shadow-none sm:p-10">
+          <div
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(14,165,233,0.1),transparent_40%),radial-gradient(circle_at_100%_100%,rgba(99,102,241,0.1),transparent_40%)]"
+            aria-hidden
+          />
+          <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-700 dark:bg-cyan-500/20 dark:text-cyan-300">
+                <Shield className="size-3" />
+                Team Infrastructure
+              </div>
+              <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white sm:text-5xl">
+                TL Management
+              </h1>
+              <p className="max-w-2xl text-sm font-medium leading-relaxed text-slate-500 dark:text-slate-400">
+                Orchestrate your team hierarchy. Assign members to Team Leaders and maintain a transparent, organized structure for your entire organization.
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="rounded-3xl bg-slate-900 px-6 py-4 text-white shadow-xl shadow-slate-900/20 dark:bg-white dark:text-slate-900">
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-60">Total TLs</p>
+                <p className="mt-1 text-3xl font-black tabular-nums">{managers.length}</p>
+              </div>
+            </div>
+          </div>
         </header>
 
-        {message ? (
-          <div className="rounded-2xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-sm text-cyan-900 dark:border-cyan-700/50 dark:bg-cyan-950/60 dark:text-cyan-200">
+        {/* Feedback Messages */}
+        {message && (
+          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-4 rounded-3xl border border-cyan-100 bg-cyan-50/50 p-4 text-sm font-semibold text-cyan-900 backdrop-blur-xl dark:border-cyan-900/30 dark:bg-cyan-950/30 dark:text-cyan-200">
+            <Info className="size-5 shrink-0" />
             {message}
           </div>
-        ) : null}
+        )}
 
-        {error ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-700/50 dark:bg-red-950/60 dark:text-red-300">
+        {error && (
+          <div className="flex items-center gap-3 animate-in fade-in slide-in-from-top-4 rounded-3xl border border-red-100 bg-red-50/50 p-4 text-sm font-semibold text-red-900 backdrop-blur-xl dark:border-red-900/30 dark:bg-red-950/30 dark:text-red-300">
+            <Info className="size-5 shrink-0" />
             {error}
           </div>
-        ) : null}
+        )}
 
-        <div className="grid gap-6 xl:grid-cols-[1.3fr_1fr]">
-          <section className="rounded-3xl border border-slate-200/80 bg-white/85 p-6 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/70">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Create Team Leader</h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-              Create a new TL account for the team. This account can later be assigned employees.
-            </p>
-            <form className="mt-6 space-y-5" onSubmit={handleCreateTl}>
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Name</label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                  placeholder="Mohit Kumar"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                  placeholder="mohit@example.com"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                  placeholder="••••••••"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={creating}
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/20 transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:bg-violet-300"
-              >
-                {creating ? "Creating TL…" : "Create Team Leader"}
-              </button>
-            </form>
-          </section>
-
-          <section className="rounded-3xl border border-slate-200/80 bg-white/85 p-6 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/70">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Assign employees</h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-              Select a team leader and assign employees to the group.
-            </p>
-
-            <div className="mt-6 space-y-5">
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Team Leader</label>
-                <select
-                  value={selectedTl}
-                  onChange={(e) => setSelectedTl(e.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-                >
-                  <option value="">— Select TL —</option>
-                  {managers.map((manager) => (
-                    <option key={manager.id} value={manager.id}>
-                      {manager.name} — {manager.role}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Employees</label>
-                <div className="mt-2 min-h-[140px] rounded-2xl border border-slate-300 bg-slate-50 p-3 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-200">
-                  {loading ? (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Loading employees...</p>
-                  ) : availableEmployees.length === 0 ? (
-                    <p className="text-sm text-slate-500 dark:text-slate-400">No employees available.</p>
-                  ) : (
-                    <div className="space-y-2 max-h-64 overflow-y-auto">
-                      {availableEmployees.map((employee) => (
-                        <label key={employee._id} className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 hover:border-cyan-300 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-cyan-500">
-                          <input
-                            type="checkbox"
-                            checked={selectedEmployeeIds.includes(employee._id)}
-                            onChange={() => toggleEmployeeSelection(employee._id)}
-                            className="h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
-                          />
-                          <span className="text-sm font-medium">{employee.employeeName}</span>
-                          <span className="ml-auto text-xs text-slate-500 dark:text-slate-400">{employee.email}</span>
-                        </label>
-                      ))}
-                    </div>
-                  )}
+        <div className="grid gap-8 lg:grid-cols-[1fr_1.5fr]">
+          {/* Left Column: Assignment Tool */}
+          <section className="h-fit sticky top-8 space-y-6">
+            <div className="relative overflow-hidden rounded-[2.5rem] border border-slate-200/60 bg-white/80 p-8 shadow-xl shadow-slate-200/40 backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/80 dark:shadow-none">
+              <div className="mb-8 flex items-center gap-4">
+                <div className="flex size-12 items-center justify-center rounded-2xl bg-cyan-600 text-white shadow-lg shadow-cyan-500/30">
+                  <UserPlus className="size-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">Assign Members</h2>
+                  <p className="text-xs font-medium text-slate-500">Distribute team members</p>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleAssign}
-                disabled={!selectedTl || selectedEmployeeIds.length === 0 || assigning}
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-cyan-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-cyan-500/20 transition hover:bg-cyan-500 disabled:cursor-not-allowed disabled:bg-cyan-300"
-              >
-                {assigning ? "Assigning…" : `Assign ${selectedEmployeeIds.length || "No"} employee(s)`}
-              </button>
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                    Target Team Leader
+                  </label>
+                  <div className="relative group">
+                    <select
+                      value={selectedTl}
+                      onChange={(e) => setSelectedTl(e.target.value)}
+                      className="w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-4 text-sm font-bold text-slate-900 outline-none transition-all focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 dark:border-slate-800 dark:bg-slate-950 dark:text-white"
+                    >
+                      <option value="">— Choose a TL —</option>
+                      {managers.map((manager) => (
+                        <option key={manager.id} value={manager.id}>
+                          {manager.name} ({manager.role})
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-slate-400 group-focus-within:text-cyan-500 transition-colors pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                      Unassigned Employees
+                    </label>
+                    <span className="text-[10px] font-bold text-slate-400">
+                      {selectedEmployeeIds.length} Selected
+                    </span>
+                  </div>
+                  <div className="h-72 overflow-y-auto rounded-3xl border border-slate-200 bg-slate-50/30 p-3 space-y-2 dark:border-slate-800 dark:bg-slate-950/50 custom-scrollbar">
+                    {loading ? (
+                      <div className="flex h-full items-center justify-center">
+                        <div className="size-6 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" />
+                      </div>
+                    ) : availableEmployees.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full py-6 text-center">
+                        <Users className="size-8 text-slate-300 dark:text-slate-700 mb-2" />
+                        <p className="text-xs font-medium text-slate-400">No unassigned members found</p>
+                      </div>
+                    ) : (
+                      availableEmployees.map((employee) => {
+                        const isSelected = selectedEmployeeIds.includes(employee._id);
+                        return (
+                          <button
+                            key={employee._id}
+                            onClick={() => toggleEmployeeSelection(employee._id)}
+                            className={`flex w-full items-center gap-3 rounded-2xl border p-3 transition-all text-left group ${
+                              isSelected 
+                                ? "border-cyan-500 bg-cyan-50/50 shadow-md shadow-cyan-500/10 dark:bg-cyan-500/10" 
+                                : "border-transparent bg-white hover:border-slate-200 dark:bg-slate-900 dark:hover:border-slate-700"
+                            }`}
+                          >
+                            <div className={`size-4 rounded-full border-2 transition-all flex items-center justify-center ${
+                              isSelected ? "bg-cyan-500 border-cyan-500" : "border-slate-300 dark:border-slate-700 group-hover:border-cyan-400"
+                            }`}>
+                              {isSelected && <div className="size-1.5 rounded-full bg-white" />}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-xs font-bold text-slate-900 dark:text-white">{employee.employeeName}</p>
+                              <p className="truncate text-[10px] text-slate-500">{employee.designation}</p>
+                            </div>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleAssign}
+                  disabled={!selectedTl || selectedEmployeeIds.length === 0 || assigning}
+                  className="group relative flex w-full items-center justify-center overflow-hidden rounded-[1.5rem] bg-cyan-600 px-6 py-4 text-sm font-black text-white shadow-xl shadow-cyan-600/20 transition-all hover:bg-cyan-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-200 disabled:shadow-none dark:disabled:bg-slate-800"
+                >
+                  <div className="relative z-10 flex items-center gap-2">
+                    {assigning ? (
+                      <div className="size-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                    ) : (
+                      <>
+                        <UserCheck className="size-4" />
+                        <span>Confirm Assignment</span>
+                      </>
+                    )}
+                  </div>
+                  {!assigning && (
+                    <ArrowRight className="absolute right-4 size-4 translate-x-4 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-30" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* Right Column: Active TL Grid */}
+          <section className="space-y-6">
+            <div className="flex items-center justify-between px-4">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400">
+                  <LayoutGrid className="size-5" />
+                </div>
+                <h2 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">Active Hierarchy</h2>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {loading ? (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-40 animate-pulse rounded-[2rem] bg-slate-100 dark:bg-slate-900" />
+                  ))}
+                </div>
+              ) : managers.length === 0 ? (
+                <div className="rounded-[2.5rem] border-2 border-dashed border-slate-200 p-20 text-center dark:border-slate-800">
+                  <Search className="mx-auto size-12 text-slate-300 dark:text-slate-700" />
+                  <h3 className="mt-4 text-lg font-bold text-slate-900 dark:text-white">No Team Leaders active</h3>
+                  <p className="mt-2 text-sm text-slate-500">Configure TL accounts in the employee management section first.</p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {managers.map((manager) => {
+                    const isExpanded = expandedTlId === manager.id;
+                    const members = employees.filter((e) => e.reportingTL?.id === manager.id);
+
+                    return (
+                      <div 
+                        key={manager.id} 
+                        className={`group relative overflow-hidden rounded-[2.5rem] border transition-all duration-500 ${
+                          isExpanded 
+                            ? "border-indigo-500 bg-white shadow-2xl dark:border-indigo-400 dark:bg-slate-900" 
+                            : "border-slate-200/60 bg-white/50 hover:border-indigo-300 hover:bg-white dark:border-slate-800/60 dark:bg-slate-900/40 dark:hover:bg-slate-800/60 dark:hover:border-indigo-500/30"
+                        }`}
+                      >
+                        <div className="p-6 sm:p-8">
+                          <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
+                            {/* Avatar */}
+                            <div className="relative shrink-0">
+                              <div className="flex size-20 items-center justify-center rounded-[2rem] bg-gradient-to-br from-indigo-500 to-violet-600 text-3xl font-black text-white shadow-xl shadow-indigo-500/30 group-hover:scale-105 transition-transform duration-500">
+                                {manager.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="absolute -bottom-1 -right-1 flex size-7 items-center justify-center rounded-xl bg-white p-1 shadow-md dark:bg-slate-800">
+                                <div className="size-full rounded-lg bg-emerald-500" />
+                              </div>
+                            </div>
+
+                            {/* Info */}
+                            <div className="min-w-0 flex-1 space-y-2">
+                              <div className="flex flex-wrap items-center gap-3">
+                                <h3 className="truncate text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                                  {manager.name}
+                                </h3>
+                                <span className="rounded-lg bg-indigo-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-300">
+                                  {manager.role}
+                                </span>
+                              </div>
+                              
+                              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] font-semibold text-slate-500 dark:text-slate-400">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex size-6 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
+                                    <Mail className="size-3.5 text-indigo-500" />
+                                  </div>
+                                  <span className="truncate">{manager.email}</span>
+                                </div>
+                                {manager.mobileNumber && (
+                                  <div className="flex items-center gap-2 border-l border-slate-200 pl-6 dark:border-slate-800">
+                                    <div className="flex size-6 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
+                                      <Phone className="size-3.5 text-indigo-500" />
+                                    </div>
+                                    <span>{manager.mobileNumber}</span>
+                                  </div>
+                                )}
+                                <div className="flex items-center gap-2 border-l border-slate-200 pl-6 dark:border-slate-800">
+                                  <div className="flex size-6 items-center justify-center rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
+                                    <Shield className="size-3.5 text-indigo-500" />
+                                  </div>
+                                  <span>{manager.role} Authority</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Stats & Toggle */}
+                            <div className="flex items-center justify-end">
+                              <button
+                                onClick={() => setExpandedTlId(isExpanded ? null : manager.id)}
+                                className={`flex size-10 items-center justify-center rounded-xl text-sm font-black transition-all ${
+                                  isExpanded 
+                                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 
+                                    : "bg-slate-100 text-slate-600 hover:bg-indigo-500 hover:text-white dark:bg-slate-800 dark:text-slate-300"
+                                }`}
+                              >
+                                {isExpanded ? (
+                                  <Minus className="size-5" />
+                                ) : (
+                                  <Plus className="size-5" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Expandable Member List */}
+                        <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isExpanded ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"}`}>
+                          <div className="border-t border-slate-100 bg-slate-50/50 p-6 dark:border-slate-800 dark:bg-slate-950/20 sm:p-8">
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              {members.length === 0 ? (
+                                <div className="col-span-full py-4 text-center">
+                                  <p className="text-xs font-bold italic text-slate-400">No team members assigned under this TL.</p>
+                                </div>
+                              ) : (
+                                members.map((member) => (
+                                  <div 
+                                    key={member._id} 
+                                    className="flex items-start gap-4 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100 transition-all hover:shadow-md hover:ring-indigo-500/20 dark:bg-slate-900 dark:ring-slate-800"
+                                  >
+                                    <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 text-sm font-black">
+                                      {member.employeeName.charAt(0)}
+                                    </div>
+                                    <div className="min-w-0 flex-1 space-y-1.5">
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <p className="truncate text-sm font-black text-slate-900 dark:text-white">{member.employeeName}</p>
+                                        <span className="rounded-md bg-indigo-50 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                                          {member.designation}
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                                        <div className="flex items-center gap-1.5">
+                                          <Mail className="size-3 text-indigo-500" />
+                                          <span className="truncate">{member.email}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                          <Phone className="size-3 text-indigo-500" />
+                                          <span>{member.mobileNumber}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                          <Shield className="size-3 text-indigo-500" />
+                                          <span>{member.accessRole}</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="size-2 shrink-0 rounded-full bg-emerald-500 shadow-lg shadow-emerald-500/50 mt-1.5" />
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </section>
         </div>
-
-        {/* ── Team Leader List Section ── */}
-        <section className="rounded-3xl border border-slate-200/80 bg-white/85 p-6 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/70">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Active Team Leaders</h2>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                Manage and view all registered team leaders in the system.
-              </p>
-            </div>
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-400">
-              <span className="font-bold text-lg">{managers.length}</span>
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {loading ? (
-              <div className="col-span-full py-12 text-center text-slate-500">Loading managers...</div>
-            ) : managers.length === 0 ? (
-              <div className="col-span-full py-12 text-center">
-                <div className="mx-auto w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mb-3 dark:bg-slate-800">
-                  <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </div>
-                <h3 className="text-slate-900 font-medium dark:text-white">No Team Leaders Found</h3>
-                <p className="text-slate-500 text-sm">Please create a new Team Leader above.</p>
-              </div>
-            ) : (
-              managers.map((manager) => {
-                const isExpanded = expandedTlId === manager.id;
-                const members = employees.filter((e) => e.reportingTL?.id === manager.id);
-
-                return (
-                  <div key={manager.id} className="col-span-full">
-                    <div className={`group relative flex items-center gap-4 rounded-2xl border transition-all ${isExpanded ? "border-violet-500 bg-violet-50/30 dark:border-violet-400 dark:bg-violet-900/20" : "border-slate-200 bg-white hover:border-violet-300 hover:shadow-xl hover:shadow-violet-500/10 dark:border-slate-800 dark:bg-slate-900/50 dark:hover:border-violet-500/50"} p-4`}>
-                      <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-600 text-xl font-bold text-white shadow-lg shadow-violet-500/30 transition group-hover:scale-105">
-                        {manager.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="truncate text-base font-bold text-slate-900 dark:text-white">{manager.name}</h3>
-                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-                          <p className="truncate text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
-                            <svg className="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            {manager.email}
-                          </p>
-                          {manager.mobileNumber && (
-                            <p className="truncate text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
-                              <svg className="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                              </svg>
-                              {manager.mobileNumber}
-                            </p>
-                          )}
-                        </div>
-                        <div className="mt-2.5 flex items-center gap-2">
-                          <span className="inline-flex items-center rounded-lg bg-violet-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-violet-700 ring-1 ring-inset ring-violet-700/10 dark:bg-violet-400/10 dark:text-violet-400 dark:ring-violet-400/20">
-                            {manager.role}
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-medium">•</span>
-                          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">
-                            {members.length} Members
-                          </span>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => setExpandedTlId(isExpanded ? null : manager.id)}
-                        className={`flex size-10 items-center justify-center rounded-xl border transition-all ${isExpanded ? "bg-violet-600 text-white border-violet-600 rotate-180" : "bg-white text-slate-400 border-slate-200 hover:border-violet-400 hover:text-violet-600 dark:bg-slate-800 dark:border-slate-700 dark:hover:border-violet-500"}`}
-                      >
-                        {isExpanded ? (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4" />
-                          </svg>
-                        ) : (
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-
-                    {/* Member List Transition Overlay */}
-                    {isExpanded && (
-                      <div className="mt-2 ml-10 space-y-2 border-l-2 border-dashed border-violet-200 pl-6 pr-2 animate-in slide-in-from-top-2 duration-300 dark:border-violet-800/50">
-                        {members.length === 0 ? (
-                          <p className="py-2 text-xs text-slate-400 italic">No team members assigned yet.</p>
-                        ) : (
-                          members.map((member) => (
-                            <div key={member._id} className="flex items-center gap-3 rounded-xl bg-white px-3 py-2.5 border border-slate-100 shadow-sm transition hover:border-cyan-200 dark:bg-slate-800/40 dark:border-slate-800/50 dark:hover:border-cyan-500/50">
-                              <div className="size-2 rounded-full bg-cyan-500"></div>
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{member.employeeName}</p>
-                                <p className="truncate text-[10px] text-slate-500 dark:text-slate-400">{member.email}</p>
-                              </div>
-                              <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-900/30 px-2 py-0.5 rounded-md">
-                                {member.designation}
-                              </span>
-                            </div>
-                          ))
-                        )}
-                        <div className="h-2"></div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </section>
       </div>
     </div>
   );

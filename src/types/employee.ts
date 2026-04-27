@@ -21,6 +21,12 @@ export type WorkingType = (typeof WORKING_TYPES)[number];
 export const WORKING_MODES = ["Work From Home", "Office"] as const;
 export type WorkingMode = (typeof WORKING_MODES)[number];
 
+export const MARITAL_STATUSES = ["Single", "Married", "Divorced", "Widowed"] as const;
+export type MaritalStatus = (typeof MARITAL_STATUSES)[number];
+
+export const RELATION_TYPES = ["Father", "Mother", "Spouse", "Guardian"] as const;
+export type RelationType = (typeof RELATION_TYPES)[number];
+
 export type EmployeeFormRole = (typeof EMPLOYEE_FORM_ROLES)[number];
 export type AccessRole = (typeof ACCESS_ROLES)[number];
 
@@ -77,6 +83,14 @@ export type Employee = {
   workingType: WorkingType;
   workingMode: WorkingMode;
   officeLocation?: string;
+  dob: string;
+  maritalStatus: MaritalStatus;
+  bloodGroup?: string;
+  offeredSalary?: number;
+  interviewDate?: string;
+  joiningDate: string;
+  relationType: RelationType;
+  relativeName: string;
   address: EmployeeAddress;
   accountDetails: EmployeeAccountDetails;
   documents: EmployeeDocuments;

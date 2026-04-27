@@ -35,6 +35,17 @@ type SavedItem = {
   logo?: string;
   signature?: string;
   email?: string;
+  showCompanyName?: boolean;
+  showCompanyAddress?: boolean;
+  showCompanyMobile?: boolean;
+  showCompanyEmail?: boolean;
+  showCompanyWebsite?: boolean;
+  showCompanyLogo?: boolean;
+  authorizedSignatory?: "Director" | "HR" | "None";
+  companyAddress?: string;
+  companyMobile?: string;
+  companyEmail?: string;
+  companyWebsite?: string;
   createdAt: string;
 };
 
@@ -54,6 +65,17 @@ export default function ExperienceLetterClient() {
     performance: "Excellent",
     remarks: "",
     template: "professional",
+    showCompanyName: true,
+    showCompanyAddress: true,
+    showCompanyMobile: true,
+    showCompanyEmail: true,
+    showCompanyWebsite: true,
+    showCompanyLogo: true,
+    authorizedSignatory: "HR",
+    companyAddress: "",
+    companyMobile: "",
+    companyEmail: "",
+    companyWebsite: "",
   });
 
   const fetchItems = useCallback(async () => {
@@ -85,6 +107,17 @@ export default function ExperienceLetterClient() {
       performance: "Excellent",
       remarks: "",
       template: "professional",
+      showCompanyName: true,
+      showCompanyAddress: true,
+      showCompanyMobile: true,
+      showCompanyEmail: true,
+      showCompanyWebsite: true,
+      showCompanyLogo: true,
+      authorizedSignatory: "HR",
+      companyAddress: "",
+      companyMobile: "",
+      companyEmail: "",
+      companyWebsite: "",
     });
     setEditItem(null);
     setView("create");
@@ -102,6 +135,11 @@ export default function ExperienceLetterClient() {
       template: item.template || "professional",
       logo: item.logo,
       signature: item.signature,
+      companyAddress: item.companyAddress,
+      companyMobile: item.companyMobile,
+      companyEmail: item.companyEmail,
+      companyWebsite: item.companyWebsite,
+      authorizedSignatory: item.authorizedSignatory || "HR",
     });
     setEditItem(item);
     setView("edit");

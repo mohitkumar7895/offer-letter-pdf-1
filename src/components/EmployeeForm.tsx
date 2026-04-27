@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { employeeSchema, type EmployeeFormValues } from "@/lib/employeeSchema";
-import { ACCESS_ROLES, WORKING_MODES, WORKING_TYPES, type Employee } from "@/types/employee";
+import { ACCESS_ROLES, WORKING_MODES, WORKING_TYPES, MARITAL_STATUSES, RELATION_TYPES, type Employee } from "@/types/employee";
 
 type Props = {
   mode: "create" | "edit";
@@ -57,6 +57,14 @@ function buildDefaults(initial?: Employee): EmployeeFormValues {
       mobileNumber: "",
       alternateNumber: "",
       email: "",
+      dob: "",
+      maritalStatus: "Single",
+      bloodGroup: "",
+      offeredSalary: 0,
+      interviewDate: "",
+      joiningDate: "",
+      relationType: "Father",
+      relativeName: "",
       designation: "",
       role: "Employee",
       accessRole: "Employee",
@@ -74,6 +82,9 @@ function buildDefaults(initial?: Employee): EmployeeFormValues {
       upiHolderName: "",
       aadharNumber: "",
       panNumber: "",
+      reportingTLId: "",
+      reportingTLName: "",
+      reportingTLEmail: "",
     };
   }
 
@@ -82,6 +93,14 @@ function buildDefaults(initial?: Employee): EmployeeFormValues {
     mobileNumber: initial.mobileNumber,
     alternateNumber: initial.alternateNumber || "",
     email: initial.email,
+    dob: initial.dob || "",
+    maritalStatus: initial.maritalStatus || "Single",
+    bloodGroup: initial.bloodGroup || "",
+    offeredSalary: initial.offeredSalary || 0,
+    interviewDate: initial.interviewDate || "",
+    joiningDate: initial.joiningDate || "",
+    relationType: initial.relationType || "Father",
+    relativeName: initial.relativeName || "",
     designation: initial.designation,
     role: initial.role,
     accessRole: initial.accessRole,
@@ -136,8 +155,8 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
     watch,
     formState: { errors },
   } = useForm<EmployeeFormValues>({
-    resolver: zodResolver(employeeSchema),
-    defaultValues: defaults,
+    resolver: zodResolver(employeeSchema) as any,
+    defaultValues: defaults as any,
   });
 
   const reportingTLId = watch("reportingTLId");
@@ -160,7 +179,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
     if (tl) {
       setValue("reportingTLId", tl.id);
       setValue("reportingTLName", tl.name);
-      setValue("reportingTLEmail", (tl as any).email || ""); // Ensure email is in the API
+      setValue("reportingTLEmail", tl.email || ""); // Ensure email is in the API
     } else {
       setValue("reportingTLId", "");
       setValue("reportingTLName", "");
@@ -175,29 +194,38 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
         ? DEVELOPER_ROLES
         : [];
 
-  async function submit(values: EmployeeFormValues, event?: React.BaseSyntheticEvent) {
+  const submit: SubmitHandler<EmployeeFormValues> = async (values, event) => {
     const nativeForm = event?.target as HTMLFormElement | undefined;
     if (!nativeForm) return;
 
     const fd = new FormData();
     for (const [key, value] of Object.entries(values)) {
-      fd.append(key, value || "");
+      fd.append(key, value !== undefined && value !== null ? String(value) : "");
     }
 
     const fileFields = [
-      "aadharFile",
-      "panCardFile",
-      "experienceLetter",
-      "passportPhoto",
-      "passbookFile",
+      { name: "aadharFile", label: "Aadhar Card", maxKb: 500, types: ["image/jpeg", "application/pdf"] },
+      { name: "panCardFile", label: "PAN Card", maxKb: 500, types: ["image/jpeg", "application/pdf"] },
+      { name: "experienceLetter", label: "Experience Letter", maxKb: 500, types: ["image/jpeg", "application/pdf"] },
+      { name: "passbookFile", label: "Passbook", maxKb: 500, types: ["image/jpeg", "application/pdf"] },
+      { name: "passportPhoto", label: "Passport Photo", maxKb: 250, types: ["image/jpeg", "image/png"] },
     ];
 
-    for (const fileField of fileFields) {
+    for (const field of fileFields) {
       const input = nativeForm.querySelector(
-        `input[name="${fileField}"]`,
+        `input[name="${field.name}"]`,
       ) as HTMLInputElement | null;
-      if (input?.files?.[0]) {
-        fd.append(fileField, input.files[0]);
+      const file = input?.files?.[0];
+      if (file) {
+        if (!field.types.includes(file.type)) {
+          alert(`${field.label} must be ${field.types.join(" or ")}`);
+          return;
+        }
+        if (file.size > field.maxKb * 1024) {
+          alert(`${field.label} size must be less than ${field.maxKb}KB`);
+          return;
+        }
+        fd.append(field.name, file);
       }
     }
 
@@ -206,15 +234,23 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
     ) as HTMLInputElement | null;
     if (academicInput?.files) {
       for (const file of Array.from(academicInput.files)) {
+        if (!["image/jpeg", "application/pdf"].includes(file.type)) {
+          alert("Academic Documents must be JPG or PDF");
+          return;
+        }
+        if (file.size > 500 * 1024) {
+          alert("Each Academic Document must be less than 500KB");
+          return;
+        }
         fd.append("academicDocuments", file);
       }
     }
 
     await onSubmit({ values, files: fd });
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit(submit)} className="space-y-6">
+    <form onSubmit={handleSubmit(submit as any)} className="space-y-6">
       {/* ── Employee Info ─────────────────────────────────────── */}
       <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900 md:grid-cols-2">
         <h2 className="md:col-span-2 text-base font-bold text-slate-900 dark:text-white">
@@ -235,7 +271,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             }}
           />
         </Field>
-        <Field label="Alternate Number" error={errors.alternateNumber?.message}>
+        <Field label="Alternate Number (Optional)" error={errors.alternateNumber?.message}>
           <input
             className={fieldClass}
             {...register("alternateNumber")}
@@ -248,6 +284,47 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
         </Field>
         <Field label="Email ID" error={errors.email?.message}>
           <input className={fieldClass} type="email" {...register("email")} />
+        </Field>
+
+        <Field label="Date of Birth" error={errors.dob?.message}>
+          <input className={fieldClass} type="date" {...register("dob")} />
+        </Field>
+
+        <Field label="Marital Status" error={errors.maritalStatus?.message}>
+          <select className={`${fieldClass} pr-8`} {...register("maritalStatus")}>
+            {MARITAL_STATUSES.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        </Field>
+
+        <Field label="Blood Group (Optional)" error={errors.bloodGroup?.message}>
+          <input className={fieldClass} placeholder="e.g. A+, O-" {...register("bloodGroup")} />
+        </Field>
+
+        <div className="grid grid-cols-2 gap-4 md:col-span-2">
+          <Field label="Relation Type" error={errors.relationType?.message}>
+            <select className={`${fieldClass} pr-8`} {...register("relationType")}>
+              {RELATION_TYPES.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Relative Name" error={errors.relativeName?.message}>
+            <input className={fieldClass} placeholder="Enter name" {...register("relativeName")} />
+          </Field>
+        </div>
+
+        <Field label="Offered Salary (Optional)" error={errors.offeredSalary?.message}>
+          <input className={fieldClass} type="number" {...register("offeredSalary")} />
+        </Field>
+
+        <Field label="Interview Date (Optional)" error={errors.interviewDate?.message}>
+          <input className={fieldClass} type="date" {...register("interviewDate")} />
+        </Field>
+
+        <Field label="Joining Date" error={errors.joiningDate?.message}>
+          <input className={fieldClass} type="date" {...register("joiningDate")} />
         </Field>
 
         {/* ── Designation (two dropdowns + fallback input) ── */}
@@ -358,7 +435,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
           </Field>
         )}
 
-        <Field label="Assign Team Leader">
+        <Field label="Assign Team Leader" error={errors.reportingTLId?.message}>
           <select
             className={`${fieldClass} truncate pr-8`}
             value={reportingTLId || ""}
@@ -420,12 +497,12 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
         <Field label="Bank Name" error={errors.bankName?.message}>
           <input className={fieldClass} {...register("bankName")} />
         </Field>
-        <Field label="Passbook Upload">
+        <Field label="Passbook Upload(Optional)">
           <input
             className={fileInputClass}
             type="file"
             name="passbookFile"
-            accept=".pdf,.jpg,.jpeg,.png"
+            accept=".pdf,.jpg,.jpeg"
           />
         </Field>
       </section>
@@ -466,7 +543,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             className={fileInputClass}
             type="file"
             name="aadharFile"
-            accept=".pdf,.jpg,.jpeg,.png"
+            accept=".pdf,.jpg,.jpeg"
           />
         </Field>
 
@@ -487,7 +564,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             className={fileInputClass}
             type="file"
             name="panCardFile"
-            accept=".pdf,.jpg,.jpeg,.png"
+            accept=".pdf,.jpg,.jpeg"
           />
         </Field>
 
@@ -497,7 +574,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             type="file"
             name="academicDocuments"
             multiple
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+            accept=".pdf,.jpg,.jpeg"
           />
         </Field>
         <Field label="Experience Letter">
@@ -505,7 +582,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             className={fileInputClass}
             type="file"
             name="experienceLetter"
-            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+            accept=".pdf,.jpg,.jpeg"
           />
         </Field>
         <Field label="Passport Size Photo">

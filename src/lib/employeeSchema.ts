@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ACCESS_ROLES, EMPLOYEE_FORM_ROLES, WORKING_MODES, WORKING_TYPES } from "@/types/employee";
+import { ACCESS_ROLES, EMPLOYEE_FORM_ROLES, WORKING_MODES, WORKING_TYPES, MARITAL_STATUSES, RELATION_TYPES } from "@/types/employee";
 
 const phoneRegex = /^\d{10}$/;
 const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
@@ -20,7 +20,15 @@ export const employeeSchema = z.object({
     .refine((value) => !value || phoneRegex.test(value), {
       message: "Alternate number must be 10 digits",
     }),
-  email: z.email("Valid email is required").trim(),
+  email: z.string().email("Valid email is required").trim(),
+  dob: z.string().min(1, "Date of birth is required"),
+  maritalStatus: z.enum(MARITAL_STATUSES),
+  bloodGroup: z.string().trim().optional().or(z.literal("")),
+  offeredSalary: z.coerce.number().optional().default(0),
+  interviewDate: z.string().trim().optional().or(z.literal("")),
+  joiningDate: z.string().min(1, "Joining date is required"),
+  relationType: z.enum(RELATION_TYPES),
+  relativeName: z.string().trim().min(2, "Relative name is required"),
   designation: z.string().trim().min(2, "Designation is required"),
   role: z.enum(EMPLOYEE_FORM_ROLES),
   accessRole: z.enum(ACCESS_ROLES),

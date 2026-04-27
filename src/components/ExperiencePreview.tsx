@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import { ExperienceLetterData, calculateDuration, formatLetterDate } from "@/utils/experienceLetterGenerator";
 import { motion } from "framer-motion";
-import { Download, Printer, FileText, Save, Loader2, CheckCircle } from "lucide-react";
+import { Download, Printer, FileText, Save, Loader2, CheckCircle, MapPin, Phone, Mail, Globe } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
@@ -169,6 +169,16 @@ export const ExperiencePreview: React.FC<Props> = ({ data, onSaved }) => {
               <h2 className="text-2xl font-black uppercase tracking-tight" style={{ color: '#0f172a' }}>
                 {data.companyName || "COMPANY NAME"}
               </h2>
+              {data.showCompanyAddress && (
+                <div className="mt-2 space-y-0.5 text-[10px] text-slate-500">
+                  {data.companyAddress && <p className="flex items-center gap-1"><MapPin className="size-2.5" /> {data.companyAddress}</p>}
+                  <div className="flex flex-wrap gap-x-3">
+                    {data.companyMobile && <p className="flex items-center gap-1"><Phone className="size-2.5" /> {data.companyMobile}</p>}
+                    {data.companyEmail && <p className="flex items-center gap-1"><Mail className="size-2.5" /> {data.companyEmail}</p>}
+                    {data.companyWebsite && <p className="flex items-center gap-1"><Globe className="size-2.5" /> {data.companyWebsite}</p>}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="text-right">
               <p className="text-xs font-bold uppercase tracking-widest" style={{ color: '#94a3b8' }}>Date</p>
@@ -222,7 +232,9 @@ export const ExperiencePreview: React.FC<Props> = ({ data, onSaved }) => {
                 <div className="mb-4 h-16"></div>
               )}
               <div className="h-[2px] w-48 ml-auto" style={{ backgroundColor: '#0f172a' }}></div>
-              <p className="mt-2 text-sm font-bold" style={{ color: '#0f172a' }}>Authorized Signatory</p>
+              <p className="mt-2 text-sm font-bold" style={{ color: '#0f172a' }}>
+                {data.authorizedSignatory === "None" ? "" : data.authorizedSignatory || "Authorized Signatory"}
+              </p>
               <p className="text-xs" style={{ color: '#64748b' }}>{data.companyName || 'Manager'}</p>
             </div>
           </div>

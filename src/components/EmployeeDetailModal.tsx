@@ -66,7 +66,14 @@ export default function EmployeeDetailModal({ employee, onClose }: Props) {
               <DetailItem label="Full Name" value={employee.employeeName} />
               <DetailItem label="Email" value={employee.email} />
               <DetailItem label="Mobile Number" value={employee.mobileNumber} />
-              <DetailItem label="Alternate Number" value={employee.alternateNumber || "—"} />
+              <DetailItem label="Alternate Number (Optional)" value={employee.alternateNumber || "—"} />
+              <DetailItem label="DOB" value={employee.dob} />
+              <DetailItem label="Marital Status" value={employee.maritalStatus} />
+              <DetailItem label="Blood Group" value={employee.bloodGroup || "—"} />
+              <DetailItem label="Relation" value={`${employee.relationType}: ${employee.relativeName}`} />
+              <DetailItem label="Offered Salary" value={employee.offeredSalary ? `₹${employee.offeredSalary}` : "—"} />
+              <DetailItem label="Interview Date" value={employee.interviewDate || "—"} />
+              <DetailItem label="Joining Date" value={employee.joiningDate} />
               <DetailItem label="Designation" value={employee.designation} />
               <DetailItem label="Role" value={employee.role} />
               <DetailItem label="Access Role" value={employee.accessRole} />

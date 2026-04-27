@@ -11,6 +11,17 @@ export interface ExperienceLetterData {
   template: "simple" | "professional";
   logo?: string;
   signature?: string;
+  companyAddress?: string;
+  companyMobile?: string;
+  companyEmail?: string;
+  companyWebsite?: string;
+  showCompanyName?: boolean;
+  showCompanyAddress?: boolean;
+  showCompanyMobile?: boolean;
+  showCompanyEmail?: boolean;
+  showCompanyWebsite?: boolean;
+  showCompanyLogo?: boolean;
+  authorizedSignatory?: "Director" | "HR" | "None";
 }
 
 export const calculateDuration = (joiningDate: string, endingDate: string): string => {

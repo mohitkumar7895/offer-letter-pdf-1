@@ -24,7 +24,20 @@ type Props = {
 };
 
 export function PdfEditorShell({ userRole, editId }: Props) {
-  const [form, setForm] = useState<FormFields>(EMPTY_FORM);
+  const [form, setForm] = useState<FormFields>(() => {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+    return {
+      ...EMPTY_FORM,
+      refNo: `REF-${now.getFullYear()}-001`,
+      offerAsOn: dateStr,
+      month: "3 months",
+    };
+  });
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployeeId, setSelectedEmployeeId] = useState("");
   const offsetX = 0;
@@ -69,6 +82,26 @@ export function PdfEditorShell({ userRole, editId }: Props) {
   }, [userRole]);
 
   useEffect(() => {
+    if (!editId) return;
+    async function loadEditData() {
+      try {
+        const res = await fetch(`/api/pdfs/${editId}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.form) {
+          setForm(data.form);
+        }
+        if (data.documentKind) {
+          setDocumentKind(data.documentKind);
+        }
+      } catch (err) {
+        console.error("Failed to load edit data:", err);
+      }
+    }
+    loadEditData();
+  }, [editId]);
+
+  useEffect(() => {
     if (!selectedEmployeeId) return;
     const emp = employees.find((item) => item._id === selectedEmployeeId);
     if (!emp) return;
@@ -90,19 +123,26 @@ export function PdfEditorShell({ userRole, editId }: Props) {
       return;
     }
 
+    const getTemplatePath = (kind: DocumentKind) => {
+      if (kind === "internship") return "/internship.pdf";
+      if (kind === "other") return "/other.pdf";
+      return "/sample.pdf";
+    };
+
     const handle = window.setTimeout(async () => {
       try {
-        const bytes = await buildEditedPdf(TEMPLATE_PATH, form, {
+        const path = getTemplatePath(documentKind);
+        const bytes = await buildEditedPdf(path, form, {
           offsetX,
           offsetY,
-        });
+        }, documentKind);
         const blob = pdfUint8ToBlob(bytes);
         revokeBlob();
         const nextUrl = URL.createObjectURL(blob);
         blobUrlRef.current = nextUrl;
         setPreviewUrl(nextUrl);
       } catch {
-        setPreviewUrl(TEMPLATE_PATH);
+        setPreviewUrl(getTemplatePath(documentKind));
       }
     }, 420);
 
@@ -113,26 +153,44 @@ export function PdfEditorShell({ userRole, editId }: Props) {
     setForm((prev) => ({ ...prev, [field]: value }));
   }, []);
 
-  const onClear = useCallback(() => {
-    setForm(EMPTY_FORM);
+  const onReset = useCallback(() => {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+    setForm({
+      ...EMPTY_FORM,
+      refNo: `REF-${now.getFullYear()}-001`,
+      offerAsOn: dateStr,
+      month: "3 months",
+    });
     setServerMessage(null);
+    setSelectedEmployeeId("");
   }, []);
 
   const onGenerate = useCallback(async () => {
     setLoading(true);
     try {
-      const bytes = await buildEditedPdf(TEMPLATE_PATH, form, {
+      const getTemplatePath = (kind: DocumentKind) => {
+        if (kind === "internship") return "/internship.pdf";
+        if (kind === "other") return "/other.pdf";
+        return "/sample.pdf";
+      };
+      const path = getTemplatePath(documentKind);
+      const bytes = await buildEditedPdf(path, form, {
         offsetX,
         offsetY,
-      });
-      downloadPdfBytes(bytes, "edited-document.pdf");
+      }, documentKind);
+      downloadPdfBytes(bytes, `${documentKind}-document.pdf`);
     } catch (e) {
       console.error(e);
       window.alert(e instanceof Error ? e.message : "Failed to generate PDF");
     } finally {
       setLoading(false);
     }
-  }, [form, offsetX, offsetY]);
+  }, [form, offsetX, offsetY, documentKind]);
 
   const persist = useCallback(async () => {
     setServerSaving(true);
@@ -158,10 +216,16 @@ export function PdfEditorShell({ userRole, editId }: Props) {
           throw new Error(data.error || "Request failed");
         }
 
-        const bytes = await buildEditedPdf(TEMPLATE_PATH, form, {
+        const getTemplatePath = (kind: DocumentKind) => {
+          if (kind === "internship") return "/internship.pdf";
+          if (kind === "other") return "/other.pdf";
+          return "/sample.pdf";
+        };
+        const path = getTemplatePath(documentKind);
+        const bytes = await buildEditedPdf(path, form, {
           offsetX,
           offsetY,
-        });
+        }, documentKind);
         const localItem = savePdfLocally({
           form,
           documentKind,
@@ -176,10 +240,16 @@ export function PdfEditorShell({ userRole, editId }: Props) {
     } catch (e) {
       if (e instanceof Error) {
         try {
-          const bytes = await buildEditedPdf(TEMPLATE_PATH, form, {
+          const getTemplatePath = (kind: DocumentKind) => {
+            if (kind === "internship") return "/internship.pdf";
+            if (kind === "other") return "/other.pdf";
+            return "/sample.pdf";
+          };
+          const path = getTemplatePath(documentKind);
+          const bytes = await buildEditedPdf(path, form, {
             offsetX,
             offsetY,
-          });
+          }, documentKind);
           const localItem = savePdfLocally({
             form,
             documentKind,
@@ -214,7 +284,7 @@ export function PdfEditorShell({ userRole, editId }: Props) {
             livePreview={livePreview}
             onLivePreviewChange={setLivePreview}
             onGenerate={onGenerate}
-            onClear={onClear}
+            onReset={onReset}
             loading={loading}
             onSaveToDatabase={persist}
             serverBusy={serverSaving}

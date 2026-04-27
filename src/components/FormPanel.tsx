@@ -16,7 +16,7 @@ type FormPanelProps = {
   livePreview: boolean;
   onLivePreviewChange: (value: boolean) => void;
   onGenerate: () => void;
-  onClear: () => void;
+  onReset: () => void;
   loading: boolean;
   onSaveToDatabase: () => void;
   serverBusy: boolean;
@@ -51,7 +51,7 @@ export function FormPanel({
   livePreview,
   onLivePreviewChange,
   onGenerate,
-  onClear,
+  onReset,
   loading,
   onSaveToDatabase,
   serverBusy,
@@ -114,6 +114,7 @@ export function FormPanel({
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {FIELD_CONFIG.map(({ key, label, placeholder }) => {
+            if (key === "month" && documentKind === "offer") return null;
             const multiline = key === "address";
             return (
               <label
@@ -187,11 +188,11 @@ export function FormPanel({
           </button>
           <button
             type="button"
-            onClick={onClear}
+            onClick={onReset}
             disabled={busy}
-            className="min-h-12 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className="min-h-12 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
           >
-            Clear
+            Reset
           </button>
         </div>
         <button

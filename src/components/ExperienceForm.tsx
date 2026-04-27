@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ExperienceLetterData } from "@/utils/experienceLetterGenerator";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, User, Building, Briefcase, Calendar, Star, MessageSquare, Image as ImageIcon, Check } from "lucide-react";
+import { Search, User, Building, Briefcase, Calendar, Star, MessageSquare, Image as ImageIcon, Check, MapPin, Phone, Globe, Mail, ShieldCheck } from "lucide-react";
 import type { Employee } from "@/types/employee";
 
 interface Props {
@@ -264,6 +264,119 @@ export const ExperienceForm: React.FC<Props> = ({ data, onChange }) => {
             className={`${inputClass} resize-none`}
           />
         </label>
+      </motion.div>
+
+      <motion.div variants={itemVariants} className="space-y-6">
+        <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+          <input
+            type="checkbox"
+            id="includeHeader"
+            checked={data.showCompanyAddress}
+            onChange={(e) => {
+              const checked = e.target.checked;
+              onChange({
+                ...data,
+                showCompanyName: checked,
+                showCompanyAddress: checked,
+                showCompanyMobile: checked,
+                showCompanyEmail: checked,
+                showCompanyWebsite: checked,
+                showCompanyLogo: checked,
+              });
+            }}
+            className="size-5 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-800"
+          />
+          <label htmlFor="includeHeader" className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
+            Include Company Details (Address, Mobile, Email, etc.)
+          </label>
+        </div>
+
+        <AnimatePresence>
+          {data.showCompanyAddress && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="grid gap-6 md:grid-cols-2 overflow-hidden"
+            >
+              <div className="space-y-4 md:col-span-2">
+                <label className="block">
+                  <span className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                    <MapPin className="size-4 text-slate-400" /> Company Address
+                  </span>
+                  <input
+                    type="text"
+                    name="companyAddress"
+                    value={data.companyAddress || ""}
+                    onChange={handleChange}
+                    placeholder="123 Business Ave, Suite 100..."
+                    className={inputClass}
+                  />
+                </label>
+              </div>
+
+              <label className="block">
+                <span className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <Phone className="size-4 text-slate-400" /> Company Mobile No.
+                </span>
+                <input
+                  type="text"
+                  name="companyMobile"
+                  value={data.companyMobile || ""}
+                  onChange={handleChange}
+                  placeholder="+91 9876543210"
+                  className={inputClass}
+                />
+              </label>
+
+              <label className="block">
+                <span className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <Mail className="size-4 text-slate-400" /> Company Email
+                </span>
+                <input
+                  type="email"
+                  name="companyEmail"
+                  value={data.companyEmail || ""}
+                  onChange={handleChange}
+                  placeholder="contact@company.com"
+                  className={inputClass}
+                />
+              </label>
+
+              <label className="block">
+                <span className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <Globe className="size-4 text-slate-400" /> Company Website
+                </span>
+                <input
+                  type="text"
+                  name="companyWebsite"
+                  value={data.companyWebsite || ""}
+                  onChange={handleChange}
+                  placeholder="www.company.com"
+                  className={inputClass}
+                />
+              </label>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+           <label className="block">
+            <span className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <ShieldCheck className="size-4 text-slate-400" /> Signature (Authorized Signatory)
+            </span>
+            <select
+              name="authorizedSignatory"
+              value={data.authorizedSignatory || "HR"}
+              onChange={handleChange}
+              className={inputClass}
+            >
+              <option value="HR">HR</option>
+              <option value="Director">Director</option>
+              <option value="None">None</option>
+            </select>
+          </label>
+        </div>
       </motion.div>
 
       <div className="grid gap-6 md:grid-cols-2">
