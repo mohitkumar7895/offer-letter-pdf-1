@@ -2,16 +2,18 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Building2, Layers, ChevronRight, Save, Plus, Trash2, Edit2, GripVertical, Check, X, Upload } from "lucide-react";
+import { Building2, Layers, ChevronRight, Save, Plus, Trash2, Edit2, GripVertical, Check, X, Upload, Shield } from "lucide-react";
 import CompanySettingsForm from "@/components/settings/CompanySettingsForm";
 import DepartmentManagement from "@/components/settings/DepartmentManagement";
+import RoleManagement from "@/components/settings/RoleManagement";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<"company" | "departments">("company");
+  const [activeTab, setActiveTab] = useState<"company" | "departments" | "roles">("company");
 
   const tabs = [
     { id: "company", label: "Company Profile", icon: Building2 },
     { id: "departments", label: "Departments", icon: Layers },
+    { id: "roles", label: "Roles", icon: Shield },
   ];
 
   return (
@@ -80,6 +82,17 @@ export default function SettingsPage() {
                     transition={{ duration: 0.2 }}
                   >
                     <DepartmentManagement />
+                  </motion.div>
+                )}
+                {activeTab === "roles" && (
+                  <motion.div
+                    key="roles"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <RoleManagement />
                   </motion.div>
                 )}
               </AnimatePresence>

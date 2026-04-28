@@ -37,6 +37,13 @@ const DEVELOPER_ROLES = [
   "UI/UX Designer",
 ];
 
+interface Department {
+  _id: string;
+  name: string;
+  roles: string[];
+  workingLocations: string[];
+}
+
 const fieldClass =
   "mt-1 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs sm:text-sm outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 dark:border-slate-600 dark:bg-slate-800";
 
@@ -76,7 +83,6 @@ function buildDefaults(initial?: Employee): EmployeeFormValues {
       officeLocation: "",
       currentAddress: "",
       permanentAddress: "",
-      workingLocation: "",
       accountHolderName: "",
       accountNumber: "",
       ifscCode: "",
@@ -112,7 +118,6 @@ function buildDefaults(initial?: Employee): EmployeeFormValues {
     officeLocation: initial.officeLocation || "",
     currentAddress: initial.address.currentAddress,
     permanentAddress: initial.address.permanentAddress,
-    workingLocation: initial.address.workingLocation,
     accountHolderName: initial.accountDetails.accountHolderName || "",
     accountNumber: initial.accountDetails.accountNumber,
     ifscCode: initial.accountDetails.ifscCode,
@@ -139,14 +144,28 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
   const [deptCategory, setDeptCategory] = useState<string>(initCategory);
   const [deptRole, setDeptRole] = useState<string>(initRole);
   const [managers, setManagers] = useState<{ id: string; name: string; email: string }[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [globalRoles, setGlobalRoles] = useState<{ _id: string; name: string }[]>([]);
 
   useEffect(() => {
     fetch("/api/employees/managers")
       .then((res) => res.json())
       .then((data) => {
-        // Fetch full email info if needed, or assume data has it
-        // For now let's assume /api/employees/managers has name and we need email
         setManagers(data.items || []);
+      })
+      .catch(console.error);
+
+    fetch("/api/settings/departments")
+      .then((res) => res.json())
+      .then((data) => {
+        setDepartments(data || []);
+      })
+      .catch(console.error);
+
+    fetch("/api/settings/roles")
+      .then((res) => res.json())
+      .then((data) => {
+        setGlobalRoles(data || []);
       })
       .catch(console.error);
   }, []);
@@ -190,12 +209,8 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
     }
   }
 
-  const roleOptions =
-    deptCategory === "Management"
-      ? MANAGEMENT_ROLES
-      : deptCategory === "Development"
-        ? DEVELOPER_ROLES
-        : [];
+  const selectedDept = departments.find(d => d.name === deptCategory);
+  const roleOptions = selectedDept ? selectedDept.roles : globalRoles.map(r => r.name);
 
   const submit: SubmitHandler<EmployeeFormValues> = async (values, event) => {
     const nativeForm = event?.target as HTMLFormElement | undefined;
@@ -347,17 +362,20 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
                 onChange={(e) => handleCategoryChange(e.target.value)}
               >
                 <option value="">— Select Department —</option>
-                <option value="Management">Management</option>
-                <option value="Development">Development</option>
+                {departments.map((dept) => (
+                  <option key={dept._id} value={dept.name}>
+                    {dept.name}
+                  </option>
+                ))}
                 <option value="Other">Other</option>
               </select>
             </div>
 
-            {/* Dropdown 2 — Role (Management or Development) */}
-            {(deptCategory === "Management" || deptCategory === "Development") && (
+            {/* Dropdown 2 — Role (Department roles or Global roles as fallback) */}
+            {deptCategory && (
               <div className="min-w-0">
                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                  {deptCategory === "Management" ? "Management Role" : "Developer Role"}
+                  {deptCategory === "Other" ? "Global Role" : `${deptCategory} Role`}
                 </label>
                 <select
                   className={`${fieldClass} truncate pr-8`}
@@ -379,8 +397,8 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
               </div>
             )}
 
-            {/* Free-text input for Other / no category */}
-            {(deptCategory === "Other" || deptCategory === "") && (
+            {/* Fallback Designation Title Input */}
+            {(!deptCategory || (deptCategory === "Other" && roleOptions.length === 0)) && (
               <div className="min-w-0">
                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
                   Designation Title
@@ -403,11 +421,23 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
         <input type="hidden" {...register("role")} />
         <Field label="Access Role" error={errors.accessRole?.message}>
           <select className={`${fieldClass} truncate pr-8`} {...register("accessRole")}>
-            {ACCESS_ROLES.map((role) => (
+            <option value="">— Select Access Role —</option>
+            {/* Default roles */}
+            {["Admin", "HR", "TL", "Employee"].map((role) => (
               <option key={role} value={role}>
                 {role}
               </option>
             ))}
+            {/* Dynamic roles from Settings */}
+            {globalRoles.map((role) => {
+              // Avoid duplicates with default roles
+              if (["Admin", "HR", "TL", "Employee"].includes(role.name)) return null;
+              return (
+                <option key={role._id} value={role.name}>
+                  {role.name}
+                </option>
+              );
+            })}
           </select>
         </Field>
         <Field label="Working Type" error={errors.workingType?.message}>
@@ -428,6 +458,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             ))}
           </select>
         </Field>
+        
         {workingMode === "Office" && (
           <Field label="Office Name / Location" error={errors.officeLocation?.message}>
             <input
@@ -468,9 +499,6 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
         </Field>
         <Field label="Permanent Address" error={errors.permanentAddress?.message}>
           <textarea className={fieldClass} rows={3} {...register("permanentAddress")} />
-        </Field>
-        <Field label="Working Location" error={errors.workingLocation?.message}>
-          <input className={fieldClass} {...register("workingLocation")} />
         </Field>
       </section>
 

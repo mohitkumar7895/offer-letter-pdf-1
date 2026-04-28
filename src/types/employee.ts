@@ -42,7 +42,6 @@ export type UploadedFileMeta = {
 export type EmployeeAddress = {
   currentAddress: string;
   permanentAddress: string;
-  workingLocation: string;
 };
 
 export type EmployeeAccountDetails = {

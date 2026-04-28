@@ -48,7 +48,6 @@ const EmployeeSchema = new Schema(
     address: {
       currentAddress: { type: String, required: true, trim: true },
       permanentAddress: { type: String, required: true, trim: true },
-      workingLocation: { type: String, required: true, trim: true },
     },
     accountDetails: {
       accountHolderName: { type: String, required: true, trim: true },
