@@ -124,8 +124,7 @@ export function PdfEditorShell({ userRole, editId }: Props) {
     }
 
     const getTemplatePath = (kind: DocumentKind) => {
-      if (kind === "internship") return "/internship.pdf";
-      if (kind === "other") return "/other.pdf";
+      // Default to /sample.pdf since other templates are not yet provided
       return "/sample.pdf";
     };
 
@@ -174,8 +173,6 @@ export function PdfEditorShell({ userRole, editId }: Props) {
     setLoading(true);
     try {
       const getTemplatePath = (kind: DocumentKind) => {
-        if (kind === "internship") return "/internship.pdf";
-        if (kind === "other") return "/other.pdf";
         return "/sample.pdf";
       };
       const path = getTemplatePath(documentKind);
@@ -217,8 +214,6 @@ export function PdfEditorShell({ userRole, editId }: Props) {
         }
 
         const getTemplatePath = (kind: DocumentKind) => {
-          if (kind === "internship") return "/internship.pdf";
-          if (kind === "other") return "/other.pdf";
           return "/sample.pdf";
         };
         const path = getTemplatePath(documentKind);
@@ -241,8 +236,6 @@ export function PdfEditorShell({ userRole, editId }: Props) {
       if (e instanceof Error) {
         try {
           const getTemplatePath = (kind: DocumentKind) => {
-            if (kind === "internship") return "/internship.pdf";
-            if (kind === "other") return "/other.pdf";
             return "/sample.pdf";
           };
           const path = getTemplatePath(documentKind);
