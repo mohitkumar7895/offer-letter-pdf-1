@@ -43,6 +43,9 @@ const fieldClass =
 const fileInputClass =
   "mt-1 w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-500 outline-none file:mr-3 file:rounded-lg file:border-0 file:bg-cyan-50 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-cyan-700 hover:file:bg-cyan-100 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 dark:file:bg-slate-700 dark:file:text-cyan-300";
 
+const existingFileClass =
+  "flex items-center gap-2 mt-2 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/50";
+
 function guessCategory(designation: string): string {
   if (MANAGEMENT_ROLES.includes(designation)) return "Management";
   if (DEVELOPER_ROLES.includes(designation)) return "Development";
@@ -504,6 +507,14 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             name="passbookFile"
             accept=".pdf,.jpg,.jpeg"
           />
+          {mode === "edit" && initial?.documents?.passbookFile && (
+            <div className={existingFileClass}>
+              <span className="text-base">📄</span>
+              <a href={initial.documents.passbookFile.url} target="_blank" className="hover:underline truncate">
+                Current: {initial.documents.passbookFile.originalName}
+              </a>
+            </div>
+          )}
         </Field>
       </section>
 
@@ -545,6 +556,14 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             name="aadharFile"
             accept=".pdf,.jpg,.jpeg"
           />
+          {mode === "edit" && initial?.documents?.aadharFile && (
+            <div className={existingFileClass}>
+              <span className="text-base">📄</span>
+              <a href={initial.documents.aadharFile.url} target="_blank" className="hover:underline truncate">
+                Current: {initial.documents.aadharFile.originalName}
+              </a>
+            </div>
+          )}
         </Field>
 
         <Field label="PAN Card Number" error={errors.panNumber?.message}>
@@ -566,6 +585,14 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             name="panCardFile"
             accept=".pdf,.jpg,.jpeg"
           />
+          {mode === "edit" && initial?.documents?.panCardFile && (
+            <div className={existingFileClass}>
+              <span className="text-base">📄</span>
+              <a href={initial.documents.panCardFile.url} target="_blank" className="hover:underline truncate">
+                Current: {initial.documents.panCardFile.originalName}
+              </a>
+            </div>
+          )}
         </Field>
 
         <Field label="Academic Documents">
@@ -576,6 +603,18 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             multiple
             accept=".pdf,.jpg,.jpeg"
           />
+          {mode === "edit" && initial?.documents?.academicDocuments && initial.documents.academicDocuments.length > 0 && (
+            <div className="mt-2 space-y-1">
+              {initial.documents.academicDocuments.map((doc, idx) => (
+                <div key={idx} className={existingFileClass}>
+                  <span className="text-base">📄</span>
+                  <a href={doc.url} target="_blank" className="hover:underline truncate">
+                    {doc.originalName}
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
         </Field>
         <Field label="Experience Letter">
           <input
@@ -584,6 +623,14 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             name="experienceLetter"
             accept=".pdf,.jpg,.jpeg"
           />
+          {mode === "edit" && initial?.documents?.experienceLetter && (
+            <div className={existingFileClass}>
+              <span className="text-base">📄</span>
+              <a href={initial.documents.experienceLetter.url} target="_blank" className="hover:underline truncate">
+                Current: {initial.documents.experienceLetter.originalName}
+              </a>
+            </div>
+          )}
         </Field>
         <Field label="Passport Size Photo">
           <input
@@ -592,6 +639,14 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             name="passportPhoto"
             accept=".jpg,.jpeg,.png"
           />
+          {mode === "edit" && initial?.documents?.passportPhoto && (
+            <div className={existingFileClass}>
+              <span className="text-base">📸</span>
+              <a href={initial.documents.passportPhoto.url} target="_blank" className="hover:underline truncate">
+                Current: {initial.documents.passportPhoto.originalName}
+              </a>
+            </div>
+          )}
         </Field>
       </section>
 
