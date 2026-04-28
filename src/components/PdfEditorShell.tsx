@@ -115,6 +115,12 @@ export function PdfEditorShell({ userRole, editId }: Props) {
       mobile: emp.mobileNumber,
     }));
   }, [employees, selectedEmployeeId]);
+  
+  useEffect(() => {
+    if (documentKind === "offer") {
+      setForm((prev) => ({ ...prev, month: "" }));
+    }
+  }, [documentKind]);
 
   useEffect(() => {
     if (!livePreview) {

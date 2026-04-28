@@ -318,10 +318,12 @@ async function applyFormToPdf(
 
   if (kind === "internship") {
     offerPrefix = "This has reference to your application for Internship, the Company is pleased to offer you as on ";
-    salaryLine = `On Stipend of Rs – ${salary}/- for ${month} and there after depend on Performance with effect.`;
+    const monthStr = month ? ` for ${month}` : "";
+    salaryLine = `On Stipend of Rs – ${salary}/-${monthStr} and there after depend on Performance with effect.`;
   } else {
     offerPrefix = "This has reference to your application for employment, the Company is pleased to offer you as on ";
-    salaryLine = `On Salary of Rs – ${salary}/- for ${month} month and there after depend on Performance with effect.`;
+    const monthStr = month ? ` for ${month} month` : "";
+    salaryLine = `On Salary of Rs – ${salary}/-${monthStr} and there after depend on Performance with effect.`;
   }
 
   const offerLines = wrapAfterFixedPrefix(

@@ -144,6 +144,15 @@ export function FormPanel({
                     onChange={(e) => onChange(key, e.target.value)}
                     placeholder={placeholder}
                     autoComplete="off"
+                    maxLength={key === "mobile" ? 10 : undefined}
+                    onInput={
+                      key === "mobile"
+                        ? (e) => {
+                            const target = e.target as HTMLInputElement;
+                            target.value = target.value.replace(/[^0-9]/g, "");
+                          }
+                        : undefined
+                    }
                     className={fieldClass}
                   />
                 )}
