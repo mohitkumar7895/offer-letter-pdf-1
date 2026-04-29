@@ -8,6 +8,37 @@ import {
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 
+const COMMON_ROLES = [
+  "Software Developer",
+  "MERN Stack Developer",
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "DevOps Engineer",
+  "UI/UX Designer",
+  "Graphic Designer",
+  "Project Manager",
+  "Product Manager",
+  "Team Leader",
+  "Quality Analyst",
+  "Automation Engineer",
+  "HR Executive",
+  "HR Manager",
+  "Sales Manager",
+  "Business Development Executive",
+  "Marketing Analyst",
+  "SEO Specialist",
+  "Content Writer",
+  "Social Media Manager",
+  "Accountant",
+  "Finance Executive",
+  "Operation Executive",
+  "Customer Support Engineer",
+  "System Administrator",
+  "Office Assistant",
+  "Intern"
+];
+
 interface Department {
   _id: string;
   name: string;
@@ -169,9 +200,15 @@ export default function RoleManagement() {
                 value={newRole}
                 onChange={(e) => setNewRole(e.target.value)}
                 placeholder="Add new role (e.g. Senior Executive)"
+                list="role-suggestions"
                 className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 dark:border-slate-700 dark:bg-slate-900"
                 onKeyDown={(e) => e.key === "Enter" && handleAddRole()}
               />
+              <datalist id="role-suggestions">
+                {COMMON_ROLES.map(role => (
+                  <option key={role} value={role} />
+                ))}
+              </datalist>
               <button
                 onClick={handleAddRole}
                 className="rounded-xl bg-cyan-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:bg-cyan-700"
@@ -192,6 +229,7 @@ export default function RoleManagement() {
                         autoFocus
                         value={editingValue}
                         onChange={(e) => setEditingValue(e.target.value)}
+                        list="role-suggestions"
                         className="flex-1 rounded-lg border border-cyan-200 bg-white px-3 py-1.5 text-sm outline-none dark:border-cyan-800 dark:bg-slate-900"
                       />
                       <button onClick={handleUpdateRole} className="p-1.5 text-cyan-600 hover:bg-cyan-50 rounded-lg">

@@ -16,6 +16,20 @@ export const ExperienceForm: React.FC<Props> = ({ data, onChange }) => {
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [search, setSearch] = useState("");
+  const [companySettings, setCompanySettings] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch("/api/settings/company");
+        const json = await res.json();
+        if (json && !json.error) setCompanySettings(json);
+      } catch (error) {
+        console.error("Failed to fetch company settings", error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   useEffect(() => {
     const fetchEmployees = async () => {
@@ -267,28 +281,52 @@ export const ExperienceForm: React.FC<Props> = ({ data, onChange }) => {
       </motion.div>
 
       <motion.div variants={itemVariants} className="space-y-6">
-        <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
-          <input
-            type="checkbox"
-            id="includeHeader"
-            checked={data.showCompanyAddress}
-            onChange={(e) => {
-              const checked = e.target.checked;
-              onChange({
-                ...data,
-                showCompanyName: checked,
-                showCompanyAddress: checked,
-                showCompanyMobile: checked,
-                showCompanyEmail: checked,
-                showCompanyWebsite: checked,
-                showCompanyLogo: checked,
-              });
-            }}
-            className="size-5 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-800"
-          />
-          <label htmlFor="includeHeader" className="text-sm font-semibold text-slate-700 dark:text-slate-300 cursor-pointer">
-            Include Company Details (Address, Mobile, Email, etc.)
+        <div className="flex flex-col gap-3 rounded-2xl bg-slate-50 p-4 dark:bg-slate-800/50">
+          <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+             Include Company Details
           </label>
+          <select
+            value={data.showCompanyAddress ? "yes" : "no"}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === "yes" && companySettings) {
+                onChange({
+                  ...data,
+                  showCompanyName: true,
+                  showCompanyAddress: true,
+                  showCompanyMobile: true,
+                  showCompanyEmail: true,
+                  showCompanyWebsite: true,
+                  showCompanyLogo: true,
+                  companyName: companySettings.companyName || data.companyName,
+                  companyAddress: companySettings.companyAddress || "",
+                  companyMobile: companySettings.companyMobile || "",
+                  companyEmail: companySettings.companyEmail || "",
+                  companyWebsite: companySettings.companyWebsite || "",
+                  logo: companySettings.companyLogo?.url || data.logo,
+                  signature: data.authorizedSignatory === "Director" 
+                    ? (companySettings.directorSignature?.url || data.signature)
+                    : (companySettings.seniorHrSignature?.url || data.signature)
+                });
+              } else {
+                const checked = value === "yes";
+                onChange({
+                  ...data,
+                  showCompanyName: checked,
+                  showCompanyAddress: checked,
+                  showCompanyMobile: checked,
+                  showCompanyEmail: checked,
+                  showCompanyWebsite: checked,
+                  showCompanyLogo: checked,
+                });
+              }
+            }}
+            className={inputClass}
+          >
+            <option value="no">No (Exclude Company Details)</option>
+            <option value="yes">Yes (Include & Auto-fill from Settings)</option>
+            <option value="manual">Manual Entry Only</option>
+          </select>
         </div>
 
         <AnimatePresence>
@@ -368,7 +406,15 @@ export const ExperienceForm: React.FC<Props> = ({ data, onChange }) => {
             <select
               name="authorizedSignatory"
               value={data.authorizedSignatory || "HR"}
-              onChange={handleChange}
+              onChange={(e) => {
+                const value = e.target.value as any;
+                let newSignature = data.signature;
+                if (companySettings) {
+                   if (value === "Director") newSignature = companySettings.directorSignature?.url || "";
+                   else if (value === "HR") newSignature = companySettings.seniorHrSignature?.url || "";
+                }
+                onChange({ ...data, authorizedSignatory: value, signature: newSignature });
+              }}
               className={inputClass}
             >
               <option value="HR">HR</option>

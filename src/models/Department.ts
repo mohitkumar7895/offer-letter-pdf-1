@@ -5,7 +5,6 @@ const DepartmentSchema = new Schema(
     name: { type: String, required: true, trim: true },
     order: { type: Number, default: 0 },
     roles: [{ type: String, trim: true }],
-    workingLocations: [{ type: String, trim: true }],
   },
   { timestamps: true }
 );

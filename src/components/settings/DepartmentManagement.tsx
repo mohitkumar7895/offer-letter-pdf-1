@@ -8,11 +8,31 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 
+const COMMON_DEPARTMENTS = [
+  "Information Technology (IT)",
+  "Human Resources (HR)",
+  "Sales",
+  "Marketing",
+  "Operations",
+  "Finance",
+  "Customer Support",
+  "Research & Development",
+  "Legal",
+  "Administration",
+  "Quality Assurance (QA)",
+  "Logistics & Supply Chain",
+  "Product Management",
+  "Design & Creative",
+  "Public Relations (PR)",
+  "Content & Strategy",
+  "Facilities & Security",
+  "Accounting & Audit"
+];
+
 interface Department {
   _id: string;
   name: string;
   roles: string[];
-  workingLocations: string[];
   order: number;
 }
 
@@ -25,8 +45,7 @@ export default function DepartmentManagement() {
   // Form states
   const [formData, setFormData] = useState({
     name: "",
-    roles: "",
-    workingLocations: ""
+    roles: ""
   });
 
   useEffect(() => {
@@ -57,14 +76,13 @@ export default function DepartmentManagement() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name,
-          roles: formData.roles.split(",").map(r => r.trim()).filter(Boolean),
-          workingLocations: formData.workingLocations.split(",").map(l => l.trim()).filter(Boolean)
+          roles: formData.roles.split(",").map(r => r.trim()).filter(Boolean)
         })
       });
 
       if (res.ok) {
         toast.success("Department added");
-        setFormData({ name: "", roles: "", workingLocations: "" });
+        setFormData({ name: "", roles: "" });
         setIsAdding(false);
         fetchDepartments();
       }
@@ -80,15 +98,14 @@ export default function DepartmentManagement() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: formData.name,
-          roles: formData.roles.split(",").map(r => r.trim()).filter(Boolean),
-          workingLocations: formData.workingLocations.split(",").map(l => l.trim()).filter(Boolean)
+          roles: formData.roles.split(",").map(r => r.trim()).filter(Boolean)
         })
       });
 
       if (res.ok) {
         toast.success("Department updated");
         setEditingId(null);
-        setFormData({ name: "", roles: "", workingLocations: "" });
+        setFormData({ name: "", roles: "" });
         fetchDepartments();
       }
     } catch (error) {
@@ -132,8 +149,7 @@ export default function DepartmentManagement() {
     setEditingId(dept._id);
     setFormData({
       name: dept.name,
-      roles: dept.roles.join(", "),
-      workingLocations: dept.workingLocations.join(", ")
+      roles: dept.roles.join(", ")
     });
   };
 
@@ -163,15 +179,21 @@ export default function DepartmentManagement() {
 
       {isAdding && (
         <div className="rounded-2xl border border-cyan-100 bg-cyan-50/30 p-4 dark:border-cyan-900/30 dark:bg-cyan-950/10">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-1">
               <label className="text-xs font-bold uppercase text-cyan-700 dark:text-cyan-400">Dept Name</label>
               <input
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g. Engineering"
+                list="dept-suggestions"
                 className="w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none dark:border-cyan-800 dark:bg-slate-900"
               />
+              <datalist id="dept-suggestions">
+                {COMMON_DEPARTMENTS.map(dept => (
+                  <option key={dept} value={dept} />
+                ))}
+              </datalist>
             </div>
             <div className="space-y-1">
               <label className="text-xs font-bold uppercase text-cyan-700 dark:text-cyan-400">Roles (comma separated)</label>
@@ -179,15 +201,6 @@ export default function DepartmentManagement() {
                 value={formData.roles}
                 onChange={(e) => setFormData({ ...formData, roles: e.target.value })}
                 placeholder="Developer, Lead, Manager"
-                className="w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none dark:border-cyan-800 dark:bg-slate-900"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs font-bold uppercase text-cyan-700 dark:text-cyan-400">Locations</label>
-              <input
-                value={formData.workingLocations}
-                onChange={(e) => setFormData({ ...formData, workingLocations: e.target.value })}
-                placeholder="Indore, Remote, Delhi"
                 className="w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none dark:border-cyan-800 dark:bg-slate-900"
               />
             </div>
@@ -218,20 +231,16 @@ export default function DepartmentManagement() {
           >
             {editingId === dept._id ? (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <input
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    list="dept-suggestions"
                     className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
                   />
                   <input
                     value={formData.roles}
                     onChange={(e) => setFormData({ ...formData, roles: e.target.value })}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
-                  />
-                  <input
-                    value={formData.workingLocations}
-                    onChange={(e) => setFormData({ ...formData, workingLocations: e.target.value })}
                     className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
                   />
                 </div>
@@ -272,11 +281,6 @@ export default function DepartmentManagement() {
                       <Briefcase className="size-4 text-cyan-500" />
                       <span className="font-medium text-slate-700 dark:text-slate-300">Roles:</span>
                       {dept.roles.length > 0 ? dept.roles.join(", ") : "None defined"}
-                    </div>
-                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                      <MapPin className="size-4 text-emerald-500" />
-                      <span className="font-medium text-slate-700 dark:text-slate-300">Locations:</span>
-                      {dept.workingLocations.length > 0 ? dept.workingLocations.join(", ") : "None defined"}
                     </div>
                   </div>
                 </div>
