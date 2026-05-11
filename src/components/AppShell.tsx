@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { AppSidebar } from "@/components/AppSidebar";
 import type { AccessRole } from "@/types/employee";
 
@@ -12,6 +12,10 @@ type Props = {
 
 export function AppShell({ initialTheme, userRole, children }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const handleCloseMobile = useCallback(() => setMobileOpen(false), []);
+  const toggleMobileMenu = useCallback(() => {
+    setMobileOpen((prev) => !prev);
+  }, []);
 
   return (
     <div className="flex min-h-screen">
@@ -19,14 +23,14 @@ export function AppShell({ initialTheme, userRole, children }: Props) {
         initialTheme={initialTheme}
         userRole={userRole}
         mobileOpen={mobileOpen}
-        onCloseMobile={() => setMobileOpen(false)}
+        onCloseMobile={handleCloseMobile}
       />
       <div className="flex min-w-0 flex-1 flex-col lg:pl-0">
         <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 px-4 py-2.5 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80 sm:px-6 lg:hidden">
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
-              onClick={() => setMobileOpen((prev) => !prev)}
+              onClick={toggleMobileMenu}
               className="inline-flex items-center justify-center p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
               aria-label="Toggle navigation menu"
               aria-expanded={mobileOpen}

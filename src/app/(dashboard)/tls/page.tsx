@@ -19,6 +19,7 @@ import {
   Minus
 } from "lucide-react";
 import type { Employee } from "@/types/employee";
+import { FormSkeleton } from "@/components/SkeletonLoader";
 
 type Manager = {
   id: string;
@@ -94,13 +95,24 @@ export default function TeamLeaderManagementPage() {
     [managers, selectedTl],
   );
 
-  const toggleEmployeeSelection = (employeeId: string) => {
+  const membersByTlId = useMemo(() => {
+    const grouped: Record<string, Employee[]> = {};
+    for (const employee of employees) {
+      const tlId = employee.reportingTL?.id;
+      if (!tlId) continue;
+      if (!grouped[tlId]) grouped[tlId] = [];
+      grouped[tlId].push(employee);
+    }
+    return grouped;
+  }, [employees]);
+
+  const toggleEmployeeSelection = useCallback((employeeId: string) => {
     setSelectedEmployeeIds((prev) =>
       prev.includes(employeeId)
         ? prev.filter((id) => id !== employeeId)
         : [...prev, employeeId],
     );
-  };
+  }, []);
 
   const availableEmployees = useMemo(() => {
     if (!selectedTl) {
@@ -260,9 +272,7 @@ export default function TeamLeaderManagementPage() {
                   </div>
                   <div className="h-72 overflow-y-auto rounded-3xl border border-slate-200 bg-slate-50/30 p-3 space-y-2 dark:border-slate-800 dark:bg-slate-950/50 custom-scrollbar">
                     {loading ? (
-                      <div className="flex h-full items-center justify-center">
-                        <div className="size-6 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" />
-                      </div>
+                      <FormSkeleton rows={3} />
                     ) : availableEmployees.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full py-6 text-center">
                         <Users className="size-8 text-slate-300 dark:text-slate-700 mb-2" />
@@ -349,7 +359,7 @@ export default function TeamLeaderManagementPage() {
                 <div className="grid gap-4">
                   {managers.map((manager) => {
                     const isExpanded = expandedTlId === manager.id;
-                    const members = employees.filter((e) => e.reportingTL?.id === manager.id);
+                    const members = membersByTlId[manager.id] || [];
 
                     return (
                       <div 
@@ -410,7 +420,9 @@ export default function TeamLeaderManagementPage() {
                             {/* Stats & Toggle */}
                             <div className="flex items-center justify-end">
                               <button
-                                onClick={() => setExpandedTlId(isExpanded ? null : manager.id)}
+                                onClick={() =>
+                                  setExpandedTlId(isExpanded ? null : manager.id)
+                                }
                                 className={`flex size-10 items-center justify-center rounded-xl text-sm font-black transition-all ${
                                   isExpanded 
                                     ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20" 

@@ -78,6 +78,9 @@ const EmployeeSchema = new Schema(
 
 EmployeeSchema.index({ email: 1 }, { unique: true });
 EmployeeSchema.index({ mobileNumber: 1 }, { unique: true });
+EmployeeSchema.index({ "reportingTL.email": 1, createdAt: -1 });
+EmployeeSchema.index({ accessRole: 1 });
+EmployeeSchema.index({ createdAt: -1 });
 
 const Employee =
   mongoose.models.Employee || mongoose.model("Employee", EmployeeSchema);

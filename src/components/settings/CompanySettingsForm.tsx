@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Save, Upload, Loader2, CheckCircle2, Globe, Mail, Phone, MapPin, Building } from "lucide-react";
 import toast from "react-hot-toast";
+import { FormSkeleton } from "@/components/SkeletonLoader";
 
 export default function CompanySettingsForm() {
   const [loading, setLoading] = useState(true);
@@ -104,11 +105,7 @@ export default function CompanySettingsForm() {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-cyan-600" />
-      </div>
-    );
+    return <FormSkeleton rows={3} />;
   }
 
   return (

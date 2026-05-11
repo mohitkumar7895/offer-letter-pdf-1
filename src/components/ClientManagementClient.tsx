@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { IClient, ClientStatus } from "@/types/client";
 import { ClientFormModal } from "./ClientFormModal";
 
@@ -20,7 +20,7 @@ export default function ClientManagementClient({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<IClient | null>(null);
 
-  const getStatusColor = (status: ClientStatus) => {
+  const getStatusColor = useCallback((status: ClientStatus) => {
     switch (status) {
       case "Completed (Live)":
         return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800";
@@ -33,17 +33,17 @@ export default function ClientManagementClient({
       default:
         return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
     }
-  };
+  }, []);
 
-  const handleAddClick = () => {
+  const handleAddClick = useCallback(() => {
     setEditingClient(null);
     setIsModalOpen(true);
-  };
+  }, []);
 
-  const handleEditClick = (client: IClient) => {
+  const handleEditClick = useCallback((client: IClient) => {
     setEditingClient(client);
     setIsModalOpen(true);
-  };
+  }, []);
 
   const handleDelete = async (id: string | undefined) => {
     if (!id) return;
@@ -59,7 +59,7 @@ export default function ClientManagementClient({
     }
   };
 
-  const handleSaved = (savedClient: IClient) => {
+  const handleSaved = useCallback((savedClient: IClient) => {
     if (editingClient) {
       setClients((prev) =>
         prev.map((c) => (c._id === savedClient._id ? savedClient : c))
@@ -68,13 +68,16 @@ export default function ClientManagementClient({
       setClients((prev) => [savedClient, ...prev]);
     }
     setIsModalOpen(false);
-  };
+  }, [editingClient]);
 
-  const filteredClients = clients.filter((c) => {
-    const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === "All" || c.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const filteredClients = useMemo(() => {
+    const normalizedQuery = searchQuery.toLowerCase();
+    return clients.filter((c) => {
+      const matchesSearch = c.name.toLowerCase().includes(normalizedQuery);
+      const matchesStatus = statusFilter === "All" || c.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+  }, [clients, searchQuery, statusFilter]);
 
   if (serverError) {
     return (

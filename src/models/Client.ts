@@ -62,6 +62,11 @@ const ClientSchema = new Schema<IClientDocument>(
   }
 );
 
+ClientSchema.index({ createdAt: -1 });
+ClientSchema.index({ status: 1, createdAt: -1 });
+ClientSchema.index({ mobileNumber: 1 });
+ClientSchema.index({ "domainDetails.renewalDate": 1 });
+
 const Client = mongoose.models.Client || mongoose.model<IClientDocument>('Client', ClientSchema);
 
 export default Client;

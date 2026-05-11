@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import type { Employee } from "@/types/employee";
+import { PageSkeleton } from "@/components/SkeletonLoader";
 
 type EmployeeResponse = { item?: Employee; error?: string };
 
@@ -41,13 +42,7 @@ export default function EmployeeViewPage() {
   }, [employeeId]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen p-3 flex items-center justify-center sm:p-4">
-        <div className="text-center">
-          <p className="text-sm text-slate-600 dark:text-slate-300">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   if (error || !employee) {

@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ExperienceForm } from "@/components/ExperienceForm";
 import { ExperiencePreview } from "@/components/ExperiencePreview";
+import { TableSkeleton } from "@/components/SkeletonLoader";
 import { ExperienceLetterData } from "@/utils/experienceLetterGenerator";
 import {
   FileBadge,
@@ -268,12 +269,7 @@ export default function ExperienceLetterClient() {
         {/* Table */}
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="size-7 animate-spin text-cyan-500" />
-              <span className="ml-3 text-sm text-slate-500 dark:text-slate-400">
-                Loading experience letters...
-              </span>
-            </div>
+            <TableSkeleton columns={5} rows={5} />
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="flex size-12 items-center justify-center rounded-xl bg-red-500/10 text-red-500">

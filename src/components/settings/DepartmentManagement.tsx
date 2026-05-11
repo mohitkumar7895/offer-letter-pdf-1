@@ -7,6 +7,7 @@ import {
   Briefcase, MapPin, Layers, Loader2, Save
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { FormSkeleton } from "@/components/SkeletonLoader";
 
 const COMMON_DEPARTMENTS = [
   "Information Technology (IT)",
@@ -154,11 +155,7 @@ export default function DepartmentManagement() {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-cyan-600" />
-      </div>
-    );
+    return <FormSkeleton rows={3} />;
   }
 
   return (

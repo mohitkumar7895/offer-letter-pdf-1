@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PdfEditorShell } from "@/components/PdfEditorShell";
+import { TableSkeleton } from "@/components/SkeletonLoader";
 import type { AccessRole } from "@/types/employee";
 import {
   FileText,
@@ -34,6 +35,20 @@ type Props = {
   userRole?: AccessRole | null;
 };
 
+const dateFormatter = new Intl.DateTimeFormat("en-IN", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
+
+function formatDate(dateStr: string) {
+  try {
+    return dateFormatter.format(new Date(dateStr));
+  } catch {
+    return dateStr;
+  }
+}
+
 export function OfferLetterClient({ userRole }: Props) {
   const [items, setItems] = useState<SavedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,32 +79,33 @@ export function OfferLetterClient({ userRole }: Props) {
     fetchItems();
   }, [fetchItems]);
 
-  const handleEdit = (id: string) => {
+  const handleEdit = useCallback((id: string) => {
     setEditId(id);
     setView("edit");
-  };
+  }, []);
 
-  const handleViewPdf = (id: string) => {
+  const handleViewPdf = useCallback((id: string) => {
     window.open(`/api/pdfs/${id}/file`, "_blank");
-  };
+  }, []);
 
-  const handleBackToList = () => {
+  const handleBackToList = useCallback(() => {
     setView("list");
     setEditId(null);
     fetchItems(); // Refresh list
-  };
+  }, [fetchItems]);
 
-  const formatDate = (dateStr: string) => {
-    try {
-      return new Date(dateStr).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-    } catch {
-      return dateStr;
-    }
-  };
+  const handleCreate = useCallback(() => {
+    setView("create");
+  }, []);
+
+  const formattedItems = useMemo(
+    () =>
+      items.map((item) => ({
+        ...item,
+        createdAtLabel: formatDate(item.createdAt),
+      })),
+    [items],
+  );
 
   // Show editor
   if (view === "create" || view === "edit") {
@@ -133,7 +149,7 @@ export function OfferLetterClient({ userRole }: Props) {
               </p>
             </div>
             <button
-              onClick={() => setView("create")}
+              onClick={handleCreate}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-teal-700 hover:shadow-md active:scale-[0.97]"
             >
               <Plus className="size-4" />
@@ -145,12 +161,7 @@ export function OfferLetterClient({ userRole }: Props) {
         {/* Table */}
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
           {loading ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="size-7 animate-spin text-teal-500" />
-              <span className="ml-3 text-sm text-slate-500 dark:text-slate-400">
-                Loading offer letters...
-              </span>
-            </div>
+            <TableSkeleton columns={4} rows={5} />
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="flex size-12 items-center justify-center rounded-xl bg-red-500/10 text-red-500">
@@ -179,7 +190,7 @@ export function OfferLetterClient({ userRole }: Props) {
                 here once saved.
               </p>
               <button
-                onClick={() => setView("create")}
+                onClick={handleCreate}
                 className="mt-5 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-teal-700"
               >
                 <Plus className="size-4" />
@@ -217,7 +228,7 @@ export function OfferLetterClient({ userRole }: Props) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {items.map((item) => (
+                    {formattedItems.map((item) => (
                       <tr
                         key={item.id}
                         className="transition-colors hover:bg-slate-50/60 dark:hover:bg-slate-800/40"
@@ -228,7 +239,7 @@ export function OfferLetterClient({ userRole }: Props) {
                           </span>
                         </td>
                         <td className="px-5 py-4 text-slate-700 dark:text-slate-300">
-                          {formatDate(item.createdAt)}
+                          {item.createdAtLabel}
                         </td>
                         <td className="px-5 py-4">
                           <div>
@@ -271,7 +282,7 @@ export function OfferLetterClient({ userRole }: Props) {
 
               {/* Mobile Cards */}
               <div className="space-y-3 p-4 md:hidden">
-                {items.map((item) => (
+                {formattedItems.map((item) => (
                   <div
                     key={item.id}
                     className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-800"
@@ -291,7 +302,7 @@ export function OfferLetterClient({ userRole }: Props) {
                           </p>
                         )}
                         <p className="text-xs text-slate-400 dark:text-slate-500">
-                          {formatDate(item.createdAt)}
+                          {item.createdAtLabel}
                         </p>
                       </div>
                     </div>

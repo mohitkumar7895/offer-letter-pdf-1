@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { PageSkeleton } from "@/components/SkeletonLoader";
 import type { AccessRole } from "@/types/employee";
 
 type MeResponse = {
@@ -11,6 +12,10 @@ type MeResponse = {
     role: AccessRole;
   } | null;
 };
+
+let sessionRequest: Promise<MeResponse["user"]> | null = null;
+let sessionCache: { user: MeResponse["user"]; fetchedAt: number } | null = null;
+const SESSION_CACHE_TTL_MS = 30_000;
 
 const roleRouteMap: Record<AccessRole, string[]> = {
   Admin: ["/dashboard", "/employees", "/offer-letter", "/tls"],
@@ -23,9 +28,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const lastPathRef = useRef<string | null>(null);
 
-  const isAuthRoute =
-    pathname === "/login" || pathname === "/register" || pathname.startsWith("/auth");
+  const isAuthRoute = useMemo(
+    () =>
+      pathname === "/login" ||
+      pathname === "/register" ||
+      pathname.startsWith("/auth"),
+    [pathname],
+  );
 
   useEffect(() => {
     if (isAuthRoute) {
@@ -35,22 +46,52 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isAuthRoute) return;
+    if (lastPathRef.current === pathname) return;
+    lastPathRef.current = pathname;
 
     let active = true;
 
     async function validate() {
       try {
-        const res = await fetch("/api/auth/me", {
-          method: "GET",
-          cache: "no-store",
-        });
+        const now = Date.now();
+        const cachedUser =
+          sessionCache && now - sessionCache.fetchedAt < SESSION_CACHE_TTL_MS
+            ? sessionCache.user
+            : undefined;
 
-        const data = (await res.json()) as MeResponse;
-        const user = data.user || null;
+        if (cachedUser !== undefined) {
+          if (!cachedUser) {
+            router.replace("/login");
+            return;
+          }
+          const allowedRoutes = roleRouteMap[cachedUser.role] || [];
+          const allowed = allowedRoutes.some((route) => pathname.startsWith(route));
+          if (!allowed) {
+            router.replace("/offer-letter");
+          }
+          return;
+        }
+
+        if (!sessionRequest) {
+          sessionRequest = (async () => {
+            const res = await fetch("/api/auth/me", {
+              method: "GET",
+              cache: "no-store",
+            });
+            const data = (await res.json()) as MeResponse;
+            if (!res.ok) return null;
+            return data.user || null;
+          })().finally(() => {
+            sessionRequest = null;
+          });
+        }
+        const user = await sessionRequest;
+        sessionCache = { user, fetchedAt: Date.now() };
+        const responseOk = Boolean(user);
 
         if (!active) return;
 
-        if (!res.ok || !user) {
+        if (!responseOk || !user) {
           router.replace("/login");
           return;
         }
@@ -79,11 +120,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }, [isAuthRoute, pathname, router]);
 
   if (loading && !isAuthRoute) {
-    return (
-      <div className="grid min-h-screen place-items-center bg-slate-100 text-slate-700 dark:bg-slate-950 dark:text-slate-200">
-        <p className="text-sm font-medium">Checking session...</p>
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   return <>{children}</>;

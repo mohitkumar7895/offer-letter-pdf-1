@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useDeferredValue } from "react";
 import type { Employee } from "@/types/employee";
+import { TableSkeleton } from "@/components/SkeletonLoader";
 
 type EmployeeResponse = { items?: Employee[]; error?: string };
 
@@ -13,6 +14,7 @@ export default function EmployeesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const [showUnassigned, setShowUnassigned] = useState(false);
 
   const load = useCallback(async () => {
@@ -42,7 +44,7 @@ export default function EmployeesPage() {
   }, [load]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = deferredQuery.trim().toLowerCase();
     if (!q) return items;
     return items.filter((item) => {
       return (
@@ -52,7 +54,7 @@ export default function EmployeesPage() {
         item.accessRole.toLowerCase().includes(q)
       );
     });
-  }, [items, query]);
+  }, [items, deferredQuery]);
 
   const roleStats = useMemo(() => {
     return items.reduce(
@@ -91,7 +93,7 @@ export default function EmployeesPage() {
                 Employee Management
               </p>
               <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
-                Somesh Bhatnagar
+                Employees
               </h1>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
                 Manage team profiles, roles, and account details.
@@ -134,7 +136,7 @@ export default function EmployeesPage() {
           </label>
         </section>
 
-        {loading ? <p className="text-sm text-slate-600 dark:text-slate-300">Loading employees...</p> : null}
+        {loading ? <TableSkeleton columns={6} rows={5} /> : null}
         {error ? <p className="text-sm text-red-700 dark:text-red-300">{error}</p> : null}
 
         {!loading && !error ? (

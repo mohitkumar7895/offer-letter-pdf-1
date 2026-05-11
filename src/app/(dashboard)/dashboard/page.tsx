@@ -56,23 +56,26 @@ export default async function DashboardPage() {
         filter["reportingTL.email"] = auth.email;
       }
 
-      employeeTotal = await Employee.countDocuments(filter);
-      
-      const roleRaw = await Employee.aggregate([
-        { $match: filter },
-        { $group: { _id: "$accessRole", count: { $sum: 1 } } },
+      const [totalCount, roleRaw, recentRows] = await Promise.all([
+        Employee.countDocuments(filter),
+        Employee.aggregate([
+          { $match: filter },
+          { $group: { _id: "$accessRole", count: { $sum: 1 } } },
+        ]),
+        Employee.find(filter)
+          .sort({ createdAt: -1 })
+          .limit(5)
+          .select("employeeName accessRole designation")
+          .lean(),
       ]);
-      
+
+      employeeTotal = totalCount;
+
       for (const row of roleRaw) {
         if (row._id in roleCounts) {
           roleCounts[row._id as keyof typeof roleCounts] = row.count;
         }
       }
-
-      const recentRows = await Employee.find(filter)
-        .sort({ createdAt: -1 })
-        .limit(5)
-        .lean();
 
       recentEmployees = recentRows.map((emp) => ({
         id: String(emp._id),

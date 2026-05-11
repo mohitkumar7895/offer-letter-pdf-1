@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import { FormSkeleton } from "@/components/SkeletonLoader";
 
 const COMMON_ROLES = [
   "Software Developer",
@@ -123,11 +124,7 @@ export default function RoleManagement() {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-cyan-600" />
-      </div>
-    );
+    return <FormSkeleton rows={3} />;
   }
 
   return (

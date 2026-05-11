@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   isLocalDashboardItem,
@@ -114,14 +114,23 @@ export function DashboardClient({
   );
 
   const stats = useMemo(() => {
+    let offer = 0;
+    let internship = 0;
+    let other = 0;
+    for (const item of items) {
+      if (item.documentKind === "offer") offer += 1;
+      else if (item.documentKind === "internship") internship += 1;
+      else if (item.documentKind === "other") other += 1;
+    }
     const total = items.length;
-    const offer = items.filter((i) => i.documentKind === "offer").length;
-    const internship = items.filter(
-      (i) => i.documentKind === "internship",
-    ).length;
-    const other = items.filter((i) => i.documentKind === "other").length;
     return { total, offer, internship, other };
   }, [items]);
+
+  const openSendModal = useCallback((id: string) => {
+    setActiveMailId(id);
+    setRecipientEmail("");
+    setMailMsg(null);
+  }, []);
 
   const filtered = useMemo(() => {
     if (filter === "all") return items;
@@ -321,11 +330,7 @@ export function DashboardClient({
               ) : null}
               <CardActions
                 item={row}
-                onSendEmail={() => {
-                  setActiveMailId(row.id);
-                  setRecipientEmail("");
-                  setMailMsg(null);
-                }}
+                onSendEmail={() => openSendModal(row.id)}
               />
             </li>
           ))}

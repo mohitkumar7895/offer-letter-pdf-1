@@ -5,6 +5,7 @@ import type { AccessRole } from "@/types/employee";
 const TOKEN_COOKIE = "ems_token";
 const DEFAULT_SECRET = "dev-secret-change-me";
 const TOKEN_TTL = "12h";
+const JWT_SECRET = process.env.JWT_SECRET || DEFAULT_SECRET;
 
 export type AuthPayload = {
   userId: string;
@@ -13,7 +14,7 @@ export type AuthPayload = {
 };
 
 function getSecret() {
-  return process.env.JWT_SECRET || DEFAULT_SECRET;
+  return JWT_SECRET;
 }
 
 export function signAuthToken(payload: AuthPayload): string {
