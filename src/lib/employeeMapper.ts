@@ -23,7 +23,6 @@ type MongoEmployee = {
   address: {
     currentAddress: string;
     permanentAddress: string;
-    workingLocation: string;
   };
   accountDetails: {
     accountHolderName: string;
@@ -76,7 +75,6 @@ export function mapEmployee(doc: MongoEmployee): Employee {
     address: {
       currentAddress: doc.address.currentAddress,
       permanentAddress: doc.address.permanentAddress,
-      workingLocation: doc.address.workingLocation,
     },
     accountDetails: {
       accountHolderName: doc.accountDetails.accountHolderName || "",

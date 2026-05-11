@@ -75,7 +75,6 @@ export async function POST(req: Request) {
       address: {
         currentAddress: values.currentAddress,
         permanentAddress: values.permanentAddress,
-        workingLocation: values.workingLocation,
       },
       accountDetails: {
         accountHolderName: values.accountHolderName,

@@ -83,7 +83,6 @@ export async function PUT(
     existing.address = {
       currentAddress: values.currentAddress,
       permanentAddress: values.permanentAddress,
-      workingLocation: values.workingLocation,
     };
     existing.accountDetails = {
       accountHolderName: values.accountHolderName,
