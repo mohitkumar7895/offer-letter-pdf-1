@@ -134,6 +134,10 @@ export default function EmployeeViewPage() {
           <DetailGrid>
             <DetailField label="Designation" value={employee.designation} />
             <DetailField label="Working Type" value={employee.workingType} />
+            <DetailField label="Working Mode" value={employee.workingMode} />
+            {employee.workingMode === "Office" && (
+              <DetailField label="Office Location" value={employee.officeLocation || "—"} />
+            )}
           </DetailGrid>
         </DetailSection>
 
@@ -157,11 +161,6 @@ export default function EmployeeViewPage() {
             <DetailField
               label="Permanent Address"
               value={employee.address.permanentAddress}
-              span="full"
-            />
-            <DetailField
-              label="Working Location"
-              value={employee.address.workingLocation}
               span="full"
             />
           </DetailGrid>
