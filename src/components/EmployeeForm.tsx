@@ -536,12 +536,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             accept=".pdf,.jpg,.jpeg"
           />
           {mode === "edit" && initial?.documents?.passbookFile && (
-            <div className={existingFileClass}>
-              <span className="text-base">📄</span>
-              <a href={initial.documents.passbookFile.url} target="_blank" className="hover:underline truncate">
-                Current: {initial.documents.passbookFile.originalName}
-              </a>
-            </div>
+            <FormFilePreview file={initial.documents.passbookFile} />
           )}
         </Field>
       </section>
@@ -585,12 +580,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             accept=".pdf,.jpg,.jpeg"
           />
           {mode === "edit" && initial?.documents?.aadharFile && (
-            <div className={existingFileClass}>
-              <span className="text-base">📄</span>
-              <a href={initial.documents.aadharFile.url} target="_blank" className="hover:underline truncate">
-                Current: {initial.documents.aadharFile.originalName}
-              </a>
-            </div>
+            <FormFilePreview file={initial.documents.aadharFile} />
           )}
         </Field>
 
@@ -614,12 +604,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             accept=".pdf,.jpg,.jpeg"
           />
           {mode === "edit" && initial?.documents?.panCardFile && (
-            <div className={existingFileClass}>
-              <span className="text-base">📄</span>
-              <a href={initial.documents.panCardFile.url} target="_blank" className="hover:underline truncate">
-                Current: {initial.documents.panCardFile.originalName}
-              </a>
-            </div>
+            <FormFilePreview file={initial.documents.panCardFile} />
           )}
         </Field>
 
@@ -632,14 +617,9 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             accept=".pdf,.jpg,.jpeg"
           />
           {mode === "edit" && initial?.documents?.academicDocuments && initial.documents.academicDocuments.length > 0 && (
-            <div className="mt-2 space-y-1">
+            <div className="mt-2 space-y-2">
               {initial.documents.academicDocuments.map((doc, idx) => (
-                <div key={idx} className={existingFileClass}>
-                  <span className="text-base">📄</span>
-                  <a href={doc.url} target="_blank" className="hover:underline truncate">
-                    {doc.originalName}
-                  </a>
-                </div>
+                <FormFilePreview key={idx} file={doc} />
               ))}
             </div>
           )}
@@ -652,12 +632,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             accept=".pdf,.jpg,.jpeg"
           />
           {mode === "edit" && initial?.documents?.experienceLetter && (
-            <div className={existingFileClass}>
-              <span className="text-base">📄</span>
-              <a href={initial.documents.experienceLetter.url} target="_blank" className="hover:underline truncate">
-                Current: {initial.documents.experienceLetter.originalName}
-              </a>
-            </div>
+            <FormFilePreview file={initial.documents.experienceLetter} />
           )}
         </Field>
         <Field label="Passport Size Photo">
@@ -668,12 +643,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             accept=".jpg,.jpeg,.png"
           />
           {mode === "edit" && initial?.documents?.passportPhoto && (
-            <div className={existingFileClass}>
-              <span className="text-base">📸</span>
-              <a href={initial.documents.passportPhoto.url} target="_blank" className="hover:underline truncate">
-                Current: {initial.documents.passportPhoto.originalName}
-              </a>
-            </div>
+            <FormFilePreview file={initial.documents.passportPhoto} />
           )}
         </Field>
       </section>
@@ -686,6 +656,47 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
         {loading ? "Saving..." : mode === "create" ? "Create Employee" : "Update Employee"}
       </button>
     </form>
+  );
+}
+
+function FormFilePreview({ file }: { file: { url: string; originalName: string } }) {
+  const isImage = /\.(jpe?g|png|gif|webp)$/i.test(file.originalName);
+  const isPdf = /\.pdf$/i.test(file.originalName);
+
+  return (
+    <div className="mt-3 flex flex-col gap-2 rounded-xl bg-slate-50 p-3 border border-slate-200 dark:bg-slate-800/50 dark:border-slate-700">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">{isImage ? '📸' : isPdf ? '📄' : '📎'}</span>
+          <div className="flex flex-col min-w-0">
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              Currently Attached
+            </span>
+            <a href={file.url} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-cyan-700 dark:text-cyan-400 hover:underline truncate">
+              {file.originalName}
+            </a>
+          </div>
+        </div>
+        <a href={file.url} target="_blank" rel="noopener noreferrer" className="shrink-0 inline-flex items-center gap-1.5 rounded-lg bg-cyan-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-cyan-700">
+          <span className="text-sm">👁️</span>
+          View Document
+        </a>
+      </div>
+      
+      {/* Visual Preview */}
+      {isImage && (
+        <div className="mt-2 w-full max-w-sm overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          <a href={file.url} target="_blank" rel="noopener noreferrer">
+            <img src={file.url} alt={file.originalName} className="w-full h-auto object-contain max-h-48 hover:opacity-90 transition-opacity" />
+          </a>
+        </div>
+      )}
+      {isPdf && (
+        <div className="mt-2 w-full h-64 overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+          <iframe src={`${file.url}#toolbar=0`} className="w-full h-full" title={file.originalName} />
+        </div>
+      )}
+    </div>
   );
 }
 

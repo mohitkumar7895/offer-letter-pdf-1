@@ -80,6 +80,14 @@ export async function PUT(
     existing.workingType = values.workingType;
     existing.workingMode = values.workingMode;
     existing.officeLocation = values.officeLocation || "";
+    existing.dob = values.dob;
+    existing.maritalStatus = values.maritalStatus;
+    existing.bloodGroup = values.bloodGroup || "";
+    existing.offeredSalary = values.offeredSalary || 0;
+    existing.interviewDate = values.interviewDate || "";
+    existing.joiningDate = values.joiningDate;
+    existing.relationType = values.relationType;
+    existing.relativeName = values.relativeName;
     existing.address = {
       currentAddress: values.currentAddress,
       permanentAddress: values.permanentAddress,
