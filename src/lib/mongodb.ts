@@ -64,6 +64,20 @@ export function getMongoIssue(error: unknown): MongoIssue {
   }
 
   if (
+    lower.includes("unable to verify the first certificate") ||
+    lower.includes("certificate") && lower.includes("tls")
+  ) {
+    const devHint =
+      process.env.NODE_ENV !== "production"
+        ? " Local dev: if you trust this network, set MONGODB_TLS_INSECURE_DEV=1 in .env.local (never in production)."
+        : "";
+    return {
+      status: 503,
+      message: `MongoDB TLS failed (${message}).${devHint}`,
+    };
+  }
+
+  if (
     lower.includes("invalid mongodb_uri") ||
     lower.includes("invalid scheme") ||
     lower.includes("uri") ||
@@ -81,17 +95,36 @@ export function getMongoIssue(error: unknown): MongoIssue {
   };
 }
 
+let warnedTlsInsecure = false;
+
 export default async function connectDB(): Promise<typeof mongoose> {
   if (!MONGODB_URI) {
     throw new Error("MONGODB_URI is not set in environment variables.");
   }
   if (cache.conn) return cache.conn;
   if (!cache.promise) {
-    cache.promise = mongoose.connect(validateMongoUri(MONGODB_URI), {
+    const uri = validateMongoUri(MONGODB_URI);
+    const tlsInsecureDev =
+      process.env.NODE_ENV !== "production" &&
+      process.env.MONGODB_TLS_INSECURE_DEV === "1";
+    if (tlsInsecureDev && !warnedTlsInsecure) {
+      warnedTlsInsecure = true;
+      console.warn(
+        "[mongodb] MONGODB_TLS_INSECURE_DEV=1: TLS certificate verification is disabled. Use only on trusted dev machines.",
+      );
+    }
+    cache.promise = mongoose.connect(uri, {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 15000,
+      ...(tlsInsecureDev ? { tlsAllowInvalidCertificates: true } : {}),
     });
   }
-  cache.conn = await cache.promise;
-  return cache.conn;
+  try {
+    cache.conn = await cache.promise;
+    return cache.conn;
+  } catch (err) {
+    cache.promise = null;
+    cache.conn = null;
+    throw err;
+  }
 }

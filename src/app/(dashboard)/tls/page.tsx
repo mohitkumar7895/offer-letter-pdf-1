@@ -115,11 +115,14 @@ export default function TeamLeaderManagementPage() {
   }, []);
 
   const availableEmployees = useMemo(() => {
-    if (!selectedTl) {
-      return employees;
-    }
-    return employees;
-  }, [employees, selectedTl]);
+    return employees.filter(emp => {
+      if (!emp.reportingTL) return true;
+      if (!emp.reportingTL.id) return true;
+      const idStr = String(emp.reportingTL.id).trim().toLowerCase();
+      if (idStr === "undefined" || idStr === "null" || idStr === "") return true;
+      return false;
+    });
+  }, [employees]);
 
   async function handleCreateTl(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
