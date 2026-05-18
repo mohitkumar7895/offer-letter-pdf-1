@@ -89,6 +89,16 @@ export function getMongoIssue(error: unknown): MongoIssue {
     };
   }
 
+  if (lower.includes("e11000 duplicate key error")) {
+    const fieldMatch = message.match(/index:\s+(?:.*?\.)?([a-zA-Z0-9_]+)_1\s+dup key/);
+    const fieldName = fieldMatch ? fieldMatch[1] : "field";
+    
+    return {
+      status: 409,
+      message: `An entry with this ${fieldName} already exists.`,
+    };
+  }
+
   return {
     status: 503,
     message,
