@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
@@ -145,3 +146,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: formatMongooseError(e) }, { status: 500 });
   }
 }
+

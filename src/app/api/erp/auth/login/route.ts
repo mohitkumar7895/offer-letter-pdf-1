@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import connectDB from "@/lib/mongodb";
@@ -64,3 +65,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: error.message || "Internal error" }, { status: 500 });
   }
 }
+

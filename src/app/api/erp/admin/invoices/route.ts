@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextResponse } from "next/server";
 import { getErpAuth } from "@/lib/erp/auth";
 import connectDB from "@/lib/mongodb";
@@ -22,3 +23,4 @@ export async function GET() {
     return NextResponse.json({ success: true, data });
   } catch (e: any) { return NextResponse.json({ error: e.message }, { status: 500 }); }
 }
+

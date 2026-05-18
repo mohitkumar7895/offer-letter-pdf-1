@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from "next/server";
 import { getErpAuth } from "@/lib/erp/auth";
 import connectDB from "@/lib/mongodb";
@@ -47,3 +48,4 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
+
