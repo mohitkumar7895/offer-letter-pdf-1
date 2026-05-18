@@ -3,8 +3,10 @@ import { getErpAuth } from "@/lib/erp/auth";
 import DashboardShell from "@/components/erp/layout/DashboardShell";
 import { 
   LayoutDashboard, Users, Briefcase, 
-  CreditCard, FileText, Shield, History
+  CreditCard, FileText, Shield, History, Settings
 } from "lucide-react";
+import connectDB from "@/lib/mongodb";
+import CompanySettings from "@/models/CompanySettings";
 
 export const metadata = {
   title: "Admin ERP Dashboard",
@@ -19,6 +21,7 @@ const adminNavItems: any[] = [
   { label: "Invoices", href: "/erp/admin/invoices", icon: "FileText" },
   { label: "Users", href: "/erp/admin/users", icon: "Users" },
   { label: "Audit Logs", href: "/erp/admin/audit", icon: "History" },
+  { label: "Settings", href: "/erp/admin/settings", icon: "Settings" },
 ];
 
 export default async function AdminLayout({
@@ -32,11 +35,18 @@ export default async function AdminLayout({
     redirect("/erp/login?error=unauthorized");
   }
 
+  await connectDB();
+  const settings = await CompanySettings.findOne().lean();
+  const companyName = settings?.companyName || "ERP PORTAL";
+  const companyLogo = settings?.companyLogo?.url || null;
+
   return (
     <DashboardShell 
       navItems={adminNavItems} 
       role="Admin" 
       userName={auth.email.split("@")[0]}
+      companyName={companyName}
+      companyLogo={companyLogo}
     >
       {children}
     </DashboardShell>

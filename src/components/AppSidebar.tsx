@@ -18,9 +18,11 @@ type Props = {
   userRole?: AccessRole;
   mobileOpen: boolean;
   onCloseMobile: () => void;
+  companyName?: string;
+  companyLogo?: string | null;
 };
 
-export function AppSidebar({ initialTheme, userRole, mobileOpen, onCloseMobile }: Props) {
+export function AppSidebar({ initialTheme, userRole, mobileOpen, onCloseMobile, companyName, companyLogo }: Props) {
   const pathname = usePathname();
   const onEditor = pathname === "/" || pathname.startsWith("/offer-letter");
   const onDashboard = pathname === "/dashboard";
@@ -54,14 +56,22 @@ export function AppSidebar({ initialTheme, userRole, mobileOpen, onCloseMobile }
         }`}
         aria-label="Main navigation"
       >
-      <div className="border-b border-slate-200 p-5 dark:border-slate-800">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-700 dark:text-indigo-400">
-          EMS Suite
-        </p>
-        <h1 className="mt-2 text-lg font-bold leading-tight text-slate-900 dark:text-white">
-          Employee manager
-        </h1>
-        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Control center</p>
+      <div className="border-b border-slate-200 p-5 dark:border-slate-800 flex items-center gap-3">
+        {companyLogo ? (
+          <img src={companyLogo} alt="Logo" className="w-10 h-10 object-contain rounded-lg bg-slate-50 dark:bg-slate-800 p-1" />
+        ) : (
+          <div className="w-10 h-10 rounded-lg bg-cyan-600/10 flex items-center justify-center shrink-0">
+            <span className="text-xl font-black text-cyan-600 dark:text-cyan-400">
+              {companyName ? companyName.charAt(0).toUpperCase() : "E"}
+            </span>
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <h1 className="text-base font-bold leading-tight text-slate-900 dark:text-white truncate">
+            {companyName || "Employee manager"}
+          </h1>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Control center</p>
+        </div>
       </div>
 
       <nav className="flex flex-1 flex-col gap-1 p-3">

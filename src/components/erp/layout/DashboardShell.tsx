@@ -40,6 +40,8 @@ interface DashboardShellProps {
   navItems: NavItem[];
   role: "Admin" | "Franchise";
   userName?: string;
+  companyName?: string;
+  companyLogo?: string | null;
 }
 
 export default function DashboardShell({
@@ -47,6 +49,8 @@ export default function DashboardShell({
   navItems,
   role,
   userName = "User",
+  companyName = "ERP PORTAL",
+  companyLogo = null,
 }: DashboardShellProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
@@ -92,13 +96,17 @@ export default function DashboardShell({
   const SidebarContent = () => (
     <div className="flex flex-col h-full bg-[#0f172a] text-slate-300 border-r border-slate-800">
       <div className="h-20 flex items-center px-6 border-b border-slate-800/50">
-        <Link href={`/erp/${role.toLowerCase()}`} className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/20 group-hover:rotate-6 transition-transform">
-            <ShieldCheck className="text-white w-6 h-6" />
-          </div>
-          <div>
-            <h1 className="text-white font-bold tracking-wide">ERP PORTAL</h1>
-            <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase">{role} Panel</span>
+        <Link href={`/erp/${role.toLowerCase()}`} className="flex items-center gap-3 group overflow-hidden">
+          {companyLogo ? (
+            <img src={companyLogo} alt={companyName} className="h-10 w-auto object-contain max-w-[40px] rounded-md bg-white p-0.5" />
+          ) : (
+            <div className="w-10 h-10 shrink-0 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-900/20 group-hover:rotate-6 transition-transform">
+              <ShieldCheck className="text-white w-6 h-6" />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-white font-bold tracking-wide truncate">{companyName}</h1>
+            <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full font-semibold tracking-wider uppercase inline-block mt-0.5">{role} Panel</span>
           </div>
         </Link>
       </div>

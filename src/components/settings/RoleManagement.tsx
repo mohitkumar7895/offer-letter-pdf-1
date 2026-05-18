@@ -198,7 +198,7 @@ export default function RoleManagement() {
                 onChange={(e) => setNewRole(e.target.value)}
                 placeholder="Add new role (e.g. Senior Executive)"
                 list="role-suggestions"
-                className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 dark:border-slate-700 dark:bg-slate-900"
+                className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 dark:border-slate-700 dark:bg-slate-900"
                 onKeyDown={(e) => e.key === "Enter" && handleAddRole()}
               />
               <datalist id="role-suggestions">
@@ -227,7 +227,7 @@ export default function RoleManagement() {
                         value={editingValue}
                         onChange={(e) => setEditingValue(e.target.value)}
                         list="role-suggestions"
-                        className="flex-1 rounded-lg border border-cyan-200 bg-white px-3 py-1.5 text-sm outline-none dark:border-cyan-800 dark:bg-slate-900"
+                        className="flex-1 rounded-lg border border-cyan-200 bg-white px-3 py-1.5 text-sm text-slate-900 dark:text-white outline-none dark:border-cyan-800 dark:bg-slate-900"
                       />
                       <button onClick={handleUpdateRole} className="p-1.5 text-cyan-600 hover:bg-cyan-50 rounded-lg">
                         <Check className="size-4" />

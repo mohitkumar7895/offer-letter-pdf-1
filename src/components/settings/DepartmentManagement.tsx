@@ -184,7 +184,7 @@ export default function DepartmentManagement() {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g. Engineering"
                 list="dept-suggestions"
-                className="w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none dark:border-cyan-800 dark:bg-slate-900"
+                className="w-full rounded-lg border border-cyan-200 bg-white px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none dark:border-cyan-800 dark:bg-slate-900"
               />
               <datalist id="dept-suggestions">
                 {COMMON_DEPARTMENTS.map(dept => (
@@ -233,7 +233,7 @@ export default function DepartmentManagement() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     list="dept-suggestions"
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 dark:text-white focus:border-cyan-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800"
                   />
                   <input
                     value={formData.roles}
