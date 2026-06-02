@@ -104,7 +104,7 @@ export default async function DashboardPage() {
               Dashboard Overview
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-              Track letter generation, employee distribution, and recent activity from one place.
+              Tracking letter generation, employee distribution, and recent activity from one place.
             </p>
           </div>
         </header>
