@@ -38,6 +38,7 @@ export async function GET() {
   try {
     await connectDB();
     const clients = await Client.find({})
+      .select("name mobileNumber email address city state status domainDetails createdAt updatedAt")
       .sort({ createdAt: -1 })
       .lean();
     return NextResponse.json(clients);

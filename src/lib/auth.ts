@@ -11,6 +11,8 @@ export type AuthPayload = {
   userId: string;
   email: string;
   role: AccessRole;
+  name?: string;
+  sessionId?: string;
 };
 
 function getSecret() {

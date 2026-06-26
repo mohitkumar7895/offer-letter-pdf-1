@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import User from "@/models/User";
+import LoginSession from "@/models/LoginSession";
 import { getAuthCookieName, signAuthToken } from "@/lib/auth";
 import { ensureAdminUser } from "@/lib/ensureAdminUser";
 import { handleApiError } from "@/lib/apiResponse";
@@ -34,10 +35,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
+    const session = await LoginSession.create({
+      userId: String(user._id),
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      ipAddress: req.headers.get("x-forwarded-for") || "",
+      userAgent: req.headers.get("user-agent") || "",
+    });
+
     const token = signAuthToken({
       userId: String(user._id),
       email: user.email,
       role: user.role,
+      name: user.name,
+      sessionId: String(session._id),
     });
 
     const res = NextResponse.json({

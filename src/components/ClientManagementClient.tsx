@@ -1,24 +1,62 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { IClient, ClientStatus } from "@/types/client";
 import { ClientFormModal } from "./ClientFormModal";
+import { TableSkeleton } from "@/components/SkeletonLoader";
+import { fetchJsonCached, getCachedJson, invalidateCachedUrl } from "@/lib/clientDataCache";
 
 interface ClientManagementClientProps {
-  initialClients: IClient[];
-  serverError: string | null;
+  initialClients?: IClient[];
+  serverError?: string | null;
 }
 
 export default function ClientManagementClient({
-  initialClients,
-  serverError,
+  initialClients = [],
+  serverError: initialError = null,
 }: ClientManagementClientProps) {
   const [clients, setClients] = useState<IClient[]>(initialClients);
+  const [loading, setLoading] = useState(initialClients.length === 0);
+  const [serverError, setServerError] = useState<string | null>(initialError);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("All");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingClient, setEditingClient] = useState<IClient | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const cached = getCachedJson<IClient[] | { items: IClient[] }>("/api/clients");
+    if (cached) {
+      const list = Array.isArray(cached) ? cached : cached.items || [];
+      setClients(list.map((r) => ({ ...r, _id: String(r._id) })));
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
+
+    fetchJsonCached<IClient[] | { items: IClient[] }>("/api/clients")
+      .then((data) => {
+        if (!active) return;
+        const list = Array.isArray(data) ? data : data.items || [];
+        setClients(
+          list.map((r) => ({
+            ...r,
+            _id: String(r._id),
+          })),
+        );
+        setServerError(null);
+      })
+      .catch(() => {
+        if (active) setServerError("Failed to load customers");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const getStatusColor = useCallback((status: ClientStatus) => {
     switch (status) {
@@ -53,6 +91,7 @@ export default function ClientManagementClient({
       const res = await fetch(`/api/clients/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete client");
       setClients((prev) => prev.filter((c) => c._id !== id));
+      invalidateCachedUrl("/api/clients");
     } catch (err) {
       console.error(err);
       alert("Error deleting client");
@@ -68,6 +107,7 @@ export default function ClientManagementClient({
       setClients((prev) => [savedClient, ...prev]);
     }
     setIsModalOpen(false);
+    invalidateCachedUrl("/api/clients");
   }, [editingClient]);
 
   const filteredClients = useMemo(() => {
@@ -86,6 +126,10 @@ export default function ClientManagementClient({
         <p>{serverError}</p>
       </div>
     );
+  }
+
+  if (loading) {
+    return <TableSkeleton columns={5} rows={6} />;
   }
 
   return (

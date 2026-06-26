@@ -16,9 +16,14 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Employee Management System",
+  title: "ProvisioningTech Control Center",
   description:
     "Employee management and offer letter automation built with Next.js.",
+  icons: {
+    icon: [{ url: "/logo.png", type: "image/png" }],
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default async function RootLayout({

@@ -3,7 +3,8 @@
 import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Building2, Layers, ChevronRight, Shield } from "lucide-react";
+import { Building2, Layers, ChevronRight, Shield, Map } from "lucide-react";
+import { ModuleGuide } from "@/components/ModuleGuide";
 
 const CompanySettingsForm = dynamic(
   () => import("@/components/settings/CompanySettingsForm"),
@@ -14,13 +15,14 @@ const DepartmentManagement = dynamic(
 const RoleManagement = dynamic(() => import("@/components/settings/RoleManagement"));
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<"company" | "departments" | "roles">("company");
+  const [activeTab, setActiveTab] = useState<"company" | "departments" | "roles" | "guide">("company");
 
   const tabs = useMemo(
     () => [
       { id: "company", label: "Company Profile", icon: Building2 },
       { id: "departments", label: "Departments", icon: Layers },
       { id: "roles", label: "Roles", icon: Shield },
+      { id: "guide", label: "Module Guide", icon: Map },
     ],
     [],
   );
@@ -102,6 +104,17 @@ export default function SettingsPage() {
                     transition={{ duration: 0.2 }}
                   >
                     <RoleManagement />
+                  </motion.div>
+                )}
+                {activeTab === "guide" && (
+                  <motion.div
+                    key="guide"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <ModuleGuide />
                   </motion.div>
                 )}
               </AnimatePresence>

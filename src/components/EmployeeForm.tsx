@@ -5,6 +5,15 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { employeeSchema, type EmployeeFormValues } from "@/lib/employeeSchema";
 import { ACCESS_ROLES, WORKING_MODES, WORKING_TYPES, MARITAL_STATUSES, RELATION_TYPES, type Employee } from "@/types/employee";
+import {
+  btnPrimary,
+  formFile,
+  formInput,
+  formLabel,
+  formSection,
+  formSectionTitle,
+  formSelect,
+} from "@/components/ui/FormUi";
 
 type Props = {
   mode: "create" | "edit";
@@ -44,11 +53,10 @@ interface Department {
   workingLocations: string[];
 }
 
-const fieldClass =
-  "mt-1 w-full min-w-0 rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs sm:text-sm outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 dark:border-slate-600 dark:bg-slate-800";
-
-const fileInputClass =
-  "mt-1 w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-500 outline-none file:mr-3 file:rounded-lg file:border-0 file:bg-cyan-50 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-cyan-700 hover:file:bg-cyan-100 focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 dark:file:bg-slate-700 dark:file:text-cyan-300";
+const fieldClass = formInput;
+const selectClass = formSelect;
+const fileInputClass = formFile;
+const sectionClass = `${formSection} grid gap-4 md:grid-cols-2`;
 
 const existingFileClass =
   "flex items-center gap-2 mt-2 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/50";
@@ -270,8 +278,8 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
   return (
     <form onSubmit={handleSubmit(submit as any)} className="space-y-6">
       {/* ── Employee Info ─────────────────────────────────────── */}
-      <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900 md:grid-cols-2">
-        <h2 className="md:col-span-2 text-base font-bold text-slate-900 dark:text-white">
+      <section className={sectionClass}>
+        <h2 className={`md:col-span-2 ${formSectionTitle}`}>
           Employee Info
         </h2>
 
@@ -309,7 +317,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
         </Field>
 
         <Field label="Marital Status" error={errors.maritalStatus?.message}>
-          <select className={`${fieldClass} pr-8`} {...register("maritalStatus")}>
+          <select className={selectClass} {...register("maritalStatus")}>
             {MARITAL_STATUSES.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -320,9 +328,9 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
           <input className={fieldClass} placeholder="e.g. A+, O-" {...register("bloodGroup")} />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4 md:col-span-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:col-span-2">
           <Field label="Relation Type" error={errors.relationType?.message}>
-            <select className={`${fieldClass} pr-8`} {...register("relationType")}>
+            <select className={selectClass} {...register("relationType")}>
               {RELATION_TYPES.map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
@@ -357,7 +365,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
                 Department
               </label>
               <select
-                className={`${fieldClass} truncate pr-8`}
+                className={selectClass}
                 value={deptCategory}
                 onChange={(e) => handleCategoryChange(e.target.value)}
               >
@@ -378,7 +386,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
                   {deptCategory === "Other" ? "Global Role" : `${deptCategory} Role`}
                 </label>
                 <select
-                  className={`${fieldClass} truncate pr-8`}
+                  className={selectClass}
                   value={deptRole}
                   onChange={(e) => handleRoleChange(e.target.value)}
                 >
@@ -420,7 +428,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
 
         <input type="hidden" {...register("role")} />
         <Field label="Access Role" error={errors.accessRole?.message}>
-          <select className={`${fieldClass} truncate pr-8`} {...register("accessRole")}>
+          <select className={selectClass} {...register("accessRole")}>
             <option value="">— Select Access Role —</option>
             {/* Default roles */}
             {["Admin", "HR", "TL", "Employee"].map((role) => (
@@ -441,7 +449,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
           </select>
         </Field>
         <Field label="Working Type" error={errors.workingType?.message}>
-          <select className={`${fieldClass} truncate pr-8`} {...register("workingType")}>
+          <select className={selectClass} {...register("workingType")}>
             {WORKING_TYPES.map((type) => (
               <option key={type} value={type}>
                 {type}
@@ -450,7 +458,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
           </select>
         </Field>
         <Field label="Working Mode" error={errors.workingMode?.message}>
-          <select className={`${fieldClass} truncate pr-8`} {...register("workingMode")}>
+          <select className={selectClass} {...register("workingMode")}>
             {WORKING_MODES.map((mode) => (
               <option key={mode} value={mode}>
                 {mode}
@@ -471,7 +479,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
 
         <Field label="Assign Team Leader" error={errors.reportingTLId?.message}>
           <select
-            className={`${fieldClass} truncate pr-8`}
+            className={selectClass}
             value={reportingTLId || ""}
             onChange={handleTLChange}
           >
@@ -489,8 +497,8 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
       </section>
 
       {/* ── Address ───────────────────────────────────────────── */}
-      <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900 md:grid-cols-2">
-        <h2 className="md:col-span-2 text-base font-bold text-slate-900 dark:text-white">
+      <section className={sectionClass}>
+        <h2 className={`md:col-span-2 ${formSectionTitle}`}>
           Address
         </h2>
 
@@ -503,8 +511,8 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
       </section>
 
       {/* ── Account Details ───────────────────────────────────── */}
-      <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900 md:grid-cols-2">
-        <h2 className="md:col-span-2 text-base font-bold text-slate-900 dark:text-white">
+      <section className={sectionClass}>
+        <h2 className={`md:col-span-2 ${formSectionTitle}`}>
           Account Details
         </h2>
 
@@ -542,8 +550,8 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
       </section>
 
       {/* ── UPI Details ───────────────────────────────────────── */}
-      <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900 md:grid-cols-2">
-        <h2 className="md:col-span-2 text-base font-bold text-slate-900 dark:text-white">
+      <section className={sectionClass}>
+        <h2 className={`md:col-span-2 ${formSectionTitle}`}>
           UPI Details
         </h2>
 
@@ -556,8 +564,8 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
       </section>
 
       {/* ── Document Upload ───────────────────────────────────── */}
-      <section className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900 md:grid-cols-2">
-        <h2 className="md:col-span-2 text-base font-bold text-slate-900 dark:text-white">
+      <section className={sectionClass}>
+        <h2 className={`md:col-span-2 ${formSectionTitle}`}>
           Documents
         </h2>
 
@@ -651,7 +659,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
       <button
         type="submit"
         disabled={loading}
-        className="rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-cyan-500 disabled:opacity-60"
+        className={`${btnPrimary} px-8 py-3`}
       >
         {loading ? "Saving..." : mode === "create" ? "Create Employee" : "Update Employee"}
       </button>
@@ -710,10 +718,10 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-      {label}
-      {children}
-      {error ? <p className="mt-1 text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+    <label className="block min-w-0">
+      <span className={formLabel}>{label}</span>
+      <div className="mt-1">{children}</div>
+      {error ? <p className="mt-1.5 text-xs font-medium text-rose-600 dark:text-rose-400">{error}</p> : null}
     </label>
   );
 }

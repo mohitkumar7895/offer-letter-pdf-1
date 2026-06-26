@@ -1,126 +1,77 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { PageSkeleton } from "@/components/SkeletonLoader";
+import { useAuth } from "@/components/AuthProvider";
+import { NAV_SECTIONS } from "@/lib/navigation";
 import type { AccessRole } from "@/types/employee";
 
-type MeResponse = {
-  user?: {
-    id: string;
-    email: string;
-    role: AccessRole;
-  } | null;
-};
+function getAllowedPrefixes(role: AccessRole): string[] {
+  const prefixes = new Set<string>();
+  for (const section of NAV_SECTIONS) {
+    for (const item of section.items) {
+      if (item.roles.includes(role)) {
+        prefixes.add(item.href);
+      }
+    }
+  }
+  return Array.from(prefixes);
+}
 
-let sessionRequest: Promise<MeResponse["user"]> | null = null;
-let sessionCache: { user: MeResponse["user"]; fetchedAt: number } | null = null;
-const SESSION_CACHE_TTL_MS = 30_000;
+function isPathAllowed(pathname: string, role: AccessRole): boolean {
+  return getAllowedPrefixes(role).some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
 
-const roleRouteMap: Record<AccessRole, string[]> = {
-  Admin: ["/dashboard", "/employees", "/offer-letter", "/tls"],
-  HR: ["/dashboard", "/employees", "/offer-letter", "/tls"],
-  TL: ["/dashboard", "/employees", "/offer-letter", "/tls"],
-  Employee: ["/offer-letter"],
-};
+function defaultRouteForRole(role: AccessRole): string {
+  if (role === "Employee") return "/employee-dashboard";
+  if (role === "TL") return "/tl-dashboard";
+  return "/dashboard";
+}
+
+function ContentSpinner() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center">
+      <div
+        className="size-8 animate-spin rounded-full border-2 border-cyan-600 border-t-transparent"
+        aria-label="Loading"
+      />
+    </div>
+  );
+}
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const lastPathRef = useRef<string | null>(null);
+  const { user, loading } = useAuth();
 
-  const isAuthRoute = useMemo(
-    () =>
-      pathname === "/login" ||
-      pathname === "/register" ||
-      pathname.startsWith("/auth"),
-    [pathname],
-  );
+  const isAuthRoute =
+    pathname === "/login" || pathname === "/register" || pathname.startsWith("/auth");
 
   useEffect(() => {
-    if (isAuthRoute) {
-      setLoading(false);
-    }
-  }, [isAuthRoute]);
+    if (isAuthRoute || loading) return;
 
-  useEffect(() => {
-    if (isAuthRoute) return;
-    if (lastPathRef.current === pathname) return;
-    lastPathRef.current = pathname;
-
-    let active = true;
-
-    async function validate() {
-      try {
-        const now = Date.now();
-        const cachedUser =
-          sessionCache && now - sessionCache.fetchedAt < SESSION_CACHE_TTL_MS
-            ? sessionCache.user
-            : undefined;
-
-        if (cachedUser !== undefined) {
-          if (!cachedUser) {
-            router.replace("/login");
-            return;
-          }
-          const allowedRoutes = roleRouteMap[cachedUser.role] || [];
-          const allowed = allowedRoutes.some((route) => pathname.startsWith(route));
-          if (!allowed) {
-            router.replace("/offer-letter");
-          }
-          return;
-        }
-
-        if (!sessionRequest) {
-          sessionRequest = (async () => {
-            const res = await fetch("/api/auth/me", {
-              method: "GET",
-              cache: "no-store",
-            });
-            const data = (await res.json()) as MeResponse;
-            if (!res.ok) return null;
-            return data.user || null;
-          })().finally(() => {
-            sessionRequest = null;
-          });
-        }
-        const user = await sessionRequest;
-        sessionCache = { user, fetchedAt: Date.now() };
-        const responseOk = Boolean(user);
-
-        if (!active) return;
-
-        if (!responseOk || !user) {
-          router.replace("/login");
-          return;
-        }
-
-        const allowedRoutes = roleRouteMap[user.role] || [];
-        const allowed = allowedRoutes.some((route) => pathname.startsWith(route));
-        if (!allowed) {
-          router.replace("/offer-letter");
-          return;
-        }
-      } catch {
-        if (active) {
-          router.replace("/login");
-          return;
-        }
-      } finally {
-        if (active) setLoading(false);
-      }
+    if (!user) {
+      router.replace("/login");
+      return;
     }
 
-    validate();
+    if (!isPathAllowed(pathname, user.role)) {
+      router.replace(defaultRouteForRole(user.role));
+    }
+  }, [isAuthRoute, loading, pathname, router, user]);
 
-    return () => {
-      active = false;
-    };
-  }, [isAuthRoute, pathname, router]);
+  if (isAuthRoute) {
+    return <>{children}</>;
+  }
 
-  if (loading && !isAuthRoute) {
-    return <PageSkeleton />;
+  if (loading && !user) {
+    return <ContentSpinner />;
+  }
+
+  if (!user) {
+    return null;
   }
 
   return <>{children}</>;

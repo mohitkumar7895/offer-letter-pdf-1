@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 
 export default function LoginPage() {
@@ -67,7 +68,7 @@ export default function LoginPage() {
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="name@company.com"
                   required
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-sm text-slate-900 outline-none transition-all focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-500/10 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:border-cyan-500 dark:focus:bg-slate-900"
+                  className="login-input mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm outline-none transition-all focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 dark:border-slate-800 dark:focus:border-cyan-500"
                 />
               </label>
 
@@ -81,7 +82,7 @@ export default function LoginPage() {
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="••••••••"
                   required
-                  className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 py-3.5 text-sm text-slate-900 outline-none transition-all focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-500/10 dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-100 dark:focus:border-cyan-500 dark:focus:bg-slate-900"
+                  className="login-input mt-2 w-full rounded-2xl border border-slate-200 px-4 py-3.5 text-sm outline-none transition-all focus:border-cyan-500 focus:ring-4 focus:ring-cyan-500/10 dark:border-slate-800 dark:focus:border-cyan-500"
                 />
               </label>
             </div>
@@ -113,6 +114,12 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+          <p className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
+            Employee/TL login?{" "}
+            <Link href="/employee-login" className="font-semibold text-cyan-700 dark:text-cyan-300">
+              Use name and mobile
+            </Link>
+          </p>
         </div>
       </div>
     </div>

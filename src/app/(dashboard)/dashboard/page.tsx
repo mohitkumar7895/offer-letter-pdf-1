@@ -1,120 +1,59 @@
-import connectDB, { getMongoIssue } from "@/lib/mongodb";
-import SavedPdf from "@/lib/models/SavedPdf";
-import type { DashboardItem } from "@/lib/dashboardTypes";
-import { normalizeDocumentKind } from "@/lib/formTypes";
+"use client";
+
+import { useEffect, useState } from "react";
+import { fetchJsonCached, getCachedJson } from "@/lib/clientDataCache";
 import { DashboardClient } from "@/components/DashboardClient";
-import Employee from "@/models/Employee";
-import { getAuthFromCookies } from "@/lib/auth";
+import type { DashboardItem } from "@/lib/dashboardTypes";
+import { TableSkeleton } from "@/components/SkeletonLoader";
 
-export const dynamic = "force-dynamic";
+type HomeData = {
+  items: DashboardItem[];
+  error: string | null;
+  employeeTotal: number;
+  roleCounts: { Admin: number; Employee: number; TL: number; HR: number };
+  recentEmployees: Array<{ id: string; name: string; role: string; designation: string }>;
+};
 
-export default async function DashboardPage() {
-  let items: DashboardItem[] = [];
-  let error: string | null = null;
-  let employeeTotal = 0;
-  const roleCounts = { Admin: 0, Employee: 0, TL: 0, HR: 0 };
-  let recentEmployees: { id: string; name: string; role: string; designation: string }[] = [];
+export default function DashboardPage() {
+  const [data, setData] = useState<HomeData | null>(null);
 
-  const auth = await getAuthFromCookies();
+  useEffect(() => {
+    const cached = getCachedJson<HomeData>("/api/dashboard/home");
+    if (cached) setData(cached);
 
-  if (!process.env.MONGODB_URI) {
-    error = "Add MONGODB_URI to .env.local to enable the dashboard.";
-  } else {
-    try {
-      await connectDB();
-
-      const rows = await SavedPdf.find()
-        .sort({ createdAt: -1 })
-        .limit(100)
-        .select("-pdfBuffer")
-        .lean();
-
-      items = rows.map((r) => ({
-        id: String(r._id),
-        title: r.title,
-        documentKind: normalizeDocumentKind(r.documentKind),
-        storage: "remote",
-        refNo: r.form?.refNo,
-        name: r.form?.name,
-        createdAt:
-          r.createdAt instanceof Date
-            ? r.createdAt.toISOString()
-            : String(r.createdAt),
-        mailSentAt:
-          r.mailSentAt instanceof Date
-            ? r.mailSentAt.toISOString()
-            : r.mailSentAt
-              ? String(r.mailSentAt)
-              : undefined,
-        mailError: r.mailError || undefined,
-        lastMailTo: r.lastMailTo || undefined,
-      }));
-
-      // Role-based filtering for employee stats
-      const filter: any = {};
-      if (auth?.role === "TL") {
-        filter["reportingTL.email"] = auth.email;
-      }
-
-      const [totalCount, roleRaw, recentRows] = await Promise.all([
-        Employee.countDocuments(filter),
-        Employee.aggregate([
-          { $match: filter },
-          { $group: { _id: "$accessRole", count: { $sum: 1 } } },
-        ]),
-        Employee.find(filter)
-          .sort({ createdAt: -1 })
-          .limit(5)
-          .select("employeeName accessRole designation")
-          .lean(),
-      ]);
-
-      employeeTotal = totalCount;
-
-      for (const row of roleRaw) {
-        if (row._id in roleCounts) {
-          roleCounts[row._id as keyof typeof roleCounts] = row.count;
-        }
-      }
-
-      recentEmployees = recentRows.map((emp) => ({
-        id: String(emp._id),
-        name: emp.employeeName,
-        role: emp.accessRole,
-        designation: emp.designation,
-      }));
-    } catch (cause) {
-      error = getMongoIssue(cause).message;
-    }
-  }
+    fetchJsonCached<HomeData>("/api/dashboard/home")
+      .then(setData)
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen flex-1 px-3 py-4 sm:px-5 sm:py-6 md:px-6 lg:px-7 xl:px-8">
       <div className="mx-auto w-full max-w-7xl space-y-5 sm:space-y-6">
-        <header className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/80 p-6 shadow-sm backdrop-blur-xl dark:border-slate-700 dark:bg-slate-900/70 sm:p-8">
-          <div
-            className="pointer-events-none absolute inset-0 opacity-70 bg-[radial-gradient(circle_at_15%_10%,rgba(14,165,233,0.16),transparent_42%),radial-gradient(circle_at_80%_0%,rgba(99,102,241,0.14),transparent_38%)]"
-            aria-hidden
-          />
+        <header className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-8">
           <div className="relative z-10">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700 dark:text-cyan-300">
-              Performance Center
+              Overview
             </p>
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
-              Dashboard Overview
+              Dashboard
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-              Tracking letter generation, employee distribution, and recent activity from one place.
+              Letters, employee stats, and recent activity in one place.
             </p>
           </div>
         </header>
-        <DashboardClient
-          initialItems={items}
-          serverError={error}
-          employeeTotal={employeeTotal}
-          roleCounts={roleCounts}
-          recentEmployees={recentEmployees}
-        />
+
+        {!data ? (
+          <TableSkeleton columns={4} rows={6} />
+        ) : (
+          <DashboardClient
+            initialItems={data.items}
+            serverError={data.error}
+            employeeTotal={data.employeeTotal}
+            roleCounts={data.roleCounts}
+            recentEmployees={data.recentEmployees}
+          />
+        )}
       </div>
     </div>
   );

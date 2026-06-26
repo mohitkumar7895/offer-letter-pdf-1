@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { AppSidebar } from "@/components/AppSidebar";
 import type { AccessRole } from "@/types/employee";
 
@@ -12,15 +13,44 @@ type Props = {
   companyLogo?: string | null;
 };
 
-export function AppShell({ initialTheme, userRole, children, companyName, companyLogo }: Props) {
+function CloseOnRouteChange({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    onClose();
+  }, [onClose]);
+
+  return null;
+}
+
+export const AppShell = memo(function AppShell({ initialTheme, userRole, children, companyName, companyLogo }: Props) {
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const handleCloseMobile = useCallback(() => setMobileOpen(false), []);
   const toggleMobileMenu = useCallback(() => {
     setMobileOpen((prev) => !prev);
   }, []);
 
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    if (!userRole) return;
+
+    const ping = () => {
+      fetch("/api/auth/heartbeat", { method: "POST", keepalive: true }).catch(() => {});
+    };
+
+    ping();
+    const interval = window.setInterval(ping, 60_000);
+    return () => window.clearInterval(interval);
+  }, [userRole]);
+
   return (
     <div className="flex min-h-screen">
+      <CloseOnRouteChange key={pathname} onClose={handleCloseMobile} />
       <AppSidebar
         initialTheme={initialTheme}
         userRole={userRole}
@@ -30,7 +60,7 @@ export function AppShell({ initialTheme, userRole, children, companyName, compan
         companyLogo={companyLogo}
       />
       <div className="flex min-w-0 flex-1 flex-col lg:pl-0">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 px-4 py-2.5 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80 sm:px-6 lg:hidden">
+        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white px-4 py-2.5 dark:border-slate-800 dark:bg-slate-950 sm:px-6 lg:hidden">
           <div className="flex items-center justify-between gap-3">
             <button
               type="button"
@@ -56,7 +86,7 @@ export function AppShell({ initialTheme, userRole, children, companyName, compan
             </button>
             <div className="flex flex-1 items-center justify-center">
               <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-white truncate max-w-[200px]">
-                {companyName || "Employee Management"}
+                {companyName}
               </span>
             </div>
             <div className="size-10" aria-hidden /> {/* Spacer for balance */}
@@ -66,4 +96,4 @@ export function AppShell({ initialTheme, userRole, children, companyName, compan
       </div>
     </div>
   );
-}
+});

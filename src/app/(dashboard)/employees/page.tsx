@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, useDeferredValue } from "react";
 import type { Employee } from "@/types/employee";
 import { TableSkeleton } from "@/components/SkeletonLoader";
+import { fetchJsonCached, getCachedJson, invalidateCachedUrl } from "@/lib/clientDataCache";
 
 type EmployeeResponse = { items?: Employee[]; error?: string };
 
@@ -18,20 +19,20 @@ export default function EmployeesPage() {
   const [showUnassigned, setShowUnassigned] = useState(false);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    const url = showUnassigned
+      ? "/api/employees?filter=unassigned&lite=1"
+      : "/api/employees?lite=1";
+    const cached = getCachedJson<EmployeeResponse>(url);
+    if (cached?.items) {
+      setItems(cached.items);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     try {
-      const url = showUnassigned ? "/api/employees?filter=unassigned" : "/api/employees";
-      const res = await fetch(url, { cache: "no-store" });
-      if (res.status === 401) {
-        router.replace("/login");
-        return;
-      }
-      const data = (await res.json()) as EmployeeResponse;
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to load employees");
-      }
+      const data = await fetchJsonCached<EmployeeResponse>(url);
       setItems(data.items || []);
-      setError(null);
+      setError(data.error || null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load employees");
     } finally {
@@ -77,6 +78,7 @@ export default function EmployeesPage() {
     }
 
     setItems((prev) => prev.filter((item) => item._id !== id));
+    invalidateCachedUrl("/api/employees");
   }
 
   return (
