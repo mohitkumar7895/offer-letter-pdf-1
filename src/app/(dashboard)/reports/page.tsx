@@ -15,7 +15,6 @@ const REPORT_TYPES = [
   { id: "projects", label: "Projects" },
   { id: "expense", label: "Expense" },
   { id: "salary", label: "Salary" },
-  { id: "assets", label: "Assets" },
   { id: "renewals", label: "Renewals" },
   { id: "payments", label: "Payments" },
   { id: "payment-ledger", label: "Payment Ledger" },

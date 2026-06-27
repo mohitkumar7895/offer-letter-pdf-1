@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { fetchJsonCached, getCachedJson } from "@/lib/clientDataCache";
 import { DashboardClient } from "@/components/DashboardClient";
+import { DashboardInsights } from "@/components/DashboardInsights";
+import { useAuth } from "@/components/AuthProvider";
 import type { DashboardItem } from "@/lib/dashboardTypes";
 import { TableSkeleton } from "@/components/SkeletonLoader";
 
@@ -15,7 +17,9 @@ type HomeData = {
 };
 
 export default function DashboardPage() {
+  const { user } = useAuth();
   const [data, setData] = useState<HomeData | null>(null);
+  const showInsights = user?.role === "Admin" || user?.role === "HR";
 
   useEffect(() => {
     const cached = getCachedJson<HomeData>("/api/dashboard/home");
@@ -38,7 +42,7 @@ export default function DashboardPage() {
               Dashboard
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-              Letters, employee stats, and recent activity in one place.
+              Letters, employee stats, business analytics, and service KPIs in one place.
             </p>
           </div>
         </header>
@@ -54,6 +58,8 @@ export default function DashboardPage() {
             recentEmployees={data.recentEmployees}
           />
         )}
+
+        {showInsights ? <DashboardInsights /> : null}
       </div>
     </div>
   );

@@ -54,6 +54,18 @@ type Props<T extends Record<string, unknown>> = {
   defaultForm?: Record<string, string>;
   canCreate?: boolean;
   extraActions?: (row: T, reload: () => void) => React.ReactNode;
+  hiddenFieldKeys?: string[];
+  onFieldChange?: (
+    key: string,
+    value: string,
+    setForm: React.Dispatch<React.SetStateAction<Record<string, string>>>,
+  ) => void;
+  transformPayload?: (
+    payload: Record<string, unknown>,
+    form: Record<string, string>,
+  ) => Record<string, unknown>;
+  mapRowToForm?: (row: T) => Record<string, string>;
+  renderFormExtra?: (form: Record<string, string>) => React.ReactNode;
 };
 
 export function ModuleCrudPage<T extends Record<string, unknown>>({
@@ -68,6 +80,11 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
   defaultForm = {},
   canCreate = true,
   extraActions,
+  hiddenFieldKeys = [],
+  onFieldChange,
+  transformPayload,
+  mapRowToForm,
+  renderFormExtra,
 }: Props<T>) {
   const [items, setItems] = useState<T[]>([]);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -165,18 +182,31 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
 
   const openEdit = (row: T) => {
     setEditing(row);
-    const next: Record<string, string> = {};
-    fields.forEach((f) => {
-      const val = row[f.key];
-      next[f.key] =
-        val != null
-          ? String(val).slice(0, 10).includes("T") && f.type === "date"
-            ? String(val).slice(0, 10)
-            : String(val)
-          : "";
-    });
-    setForm(next);
+    if (mapRowToForm) {
+      setForm(mapRowToForm(row));
+    } else {
+      const next: Record<string, string> = {};
+      fields.forEach((f) => {
+        const val = row[f.key];
+        next[f.key] =
+          val != null
+            ? String(val).slice(0, 10).includes("T") && f.type === "date"
+              ? String(val).slice(0, 10)
+              : String(val)
+            : "";
+      });
+      hiddenFieldKeys.forEach((key) => {
+        const val = row[key];
+        if (val != null) next[key] = String(val);
+      });
+      setForm(next);
+    }
     setModalOpen(true);
+  };
+
+  const handleFieldChange = (key: string, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    onFieldChange?.(key, value, setForm);
   };
 
   const save = async () => {
@@ -188,12 +218,18 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
           payload[f.key] = f.type === "number" ? Number(form[f.key]) : form[f.key];
         }
       });
+      hiddenFieldKeys.forEach((key) => {
+        if (form[key] !== undefined && form[key] !== "") {
+          payload[key] = form[key];
+        }
+      });
+      const body = transformPayload ? transformPayload(payload, form) : payload;
       const url = editing ? `${apiPath}/${getRowId(editing)}` : apiPath;
       const method = editing ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Save failed");
@@ -301,7 +337,7 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
                   <select
                     className={formSelect}
                     value={form[field.key] || ""}
-                    onChange={(e) => setForm((p) => ({ ...p, [field.key]: e.target.value }))}
+                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
                   >
                     <option value="">Select…</option>
                     {field.options?.map((o) => (
@@ -315,20 +351,21 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
                     className={formTextarea}
                     rows={3}
                     value={form[field.key] || ""}
-                    onChange={(e) => setForm((p) => ({ ...p, [field.key]: e.target.value }))}
+                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
                   />
                 ) : (
                   <input
                     type={field.type || "text"}
                     className={formInput}
                     value={form[field.key] || ""}
-                    onChange={(e) => setForm((p) => ({ ...p, [field.key]: e.target.value }))}
+                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
                   />
                 )}
               </FormField>
             );
           })}
         </div>
+        {renderFormExtra?.(form)}
       </FormModal>
 
       <ConfirmDialog

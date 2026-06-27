@@ -40,7 +40,7 @@ export async function GET(_req: Request) {
     let dbQuery = Employee.find(query).sort({ createdAt: -1 });
     if (lite) {
       dbQuery = dbQuery.select(
-        "_id employeeName mobileNumber email designation role accessRole reportingTL createdAt updatedAt",
+        "_id employeeName mobileNumber email designation role accessRole offeredSalary reportingTL createdAt updatedAt",
       );
     } else {
       dbQuery = dbQuery.select(

@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       createdBy: auth.user.userId,
       updatedBy: auth.user.userId,
     });
-    await createNotification({ title: "Salary Due", message: `Salary for ${parsed.data.employeeName} - ${parsed.data.month}/${parsed.data.year}`, type: "salary_due", link: "/salary" });
+    await createNotification({ title: "Salary Due", message: `Salary for ${parsed.data.employeeName} - ${parsed.data.month}/${parsed.data.year}`, type: "salary_due", link: "/attendance" });
     return NextResponse.json({ item: { ...item.toObject(), _id: String(item._id) } }, { status: 201 });
   } catch (error) {
     return handleApiError(error);

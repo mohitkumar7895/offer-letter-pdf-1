@@ -43,15 +43,13 @@ const peopleFlow = [
   ["Employees", "Staff master record", "/employees"],
   ["TL Management", "TL ke under employees", "/tls"],
   ["Staff Allocation", "Project par kaun kaam karega", "/staff-allocation"],
-  ["Salary / Expenses", "Staff payout records", "/salary"],
+  ["Salary Calculator", "Calculate & save staff salary", "/attendance"],
 ] as const;
 
 const dataModules = [
   ["Domains", "Domain expiry record", "/domains"],
   ["Service Charges", "Fees/GST/discount record", "/service-charges"],
   ["Office Expenses", "Office spending record", "/office-expenses"],
-  ["Assets", "Company asset inventory", "/assets"],
-  ["Purchasing", "Purchase request flow", "/purchases"],
   ["Reports", "Export CSV records", "/reports"],
 ] as const;
 

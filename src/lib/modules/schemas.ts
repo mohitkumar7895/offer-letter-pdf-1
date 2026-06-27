@@ -200,6 +200,27 @@ export const salarySchema = z.object({
   notes: z.string().optional(),
 });
 
+export const salaryCalculationSchema = z.object({
+  employeeId: z.string().optional(),
+  employeeName: z.string().trim().min(1),
+  monthLabel: z.string().trim().min(1),
+  monthlySalary: z.coerce.number().min(0),
+  monthDays: z.coerce.number().min(1),
+  unpaidLeaves: z.coerce.number().min(0).optional(),
+  bonusAmount: z.coerce.number().min(0).optional(),
+  bonusDays: z.coerce.number().min(0).optional(),
+  deductionAmount: z.coerce.number().min(0).optional(),
+  deductionDays: z.coerce.number().min(0).optional(),
+  perDaySalary: z.coerce.number().optional(),
+  payableDays: z.coerce.number().optional(),
+  earnedSalary: z.coerce.number().optional(),
+  bonusFromDays: z.coerce.number().optional(),
+  totalBonus: z.coerce.number().optional(),
+  deductionFromDays: z.coerce.number().optional(),
+  totalDeductions: z.coerce.number().optional(),
+  netSalary: z.coerce.number().optional(),
+});
+
 export const taskSchema = z.object({
   title: z.string().trim().min(1),
   description: z.string().optional(),
