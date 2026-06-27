@@ -52,7 +52,7 @@ export default function EmployeeLoginPage() {
               Login with name & mobile
             </h1>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Employee aur TL apna dashboard yahan se open karenge.
+              Employees and TLs can open their dashboard from here.
             </p>
           </div>
 

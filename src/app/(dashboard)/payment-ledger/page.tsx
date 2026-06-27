@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowDownCircle, ArrowUpCircle, CreditCard, IndianRupee, RefreshCw } from "lucide-react";
 import { Breadcrumb } from "@/components/modules/Breadcrumb";
+import { FinanceFlowGuide } from "@/components/modules/FinanceFlowGuide";
 import { StatusBadge } from "@/components/modules/ModuleCrudPage";
 import { btnPrimary, btnSecondary } from "@/components/ui/FormUi";
 
@@ -93,24 +94,26 @@ export default function PaymentLedgerPage() {
           items={[
             { label: "Dashboard", href: "/dashboard" },
             { label: "Finance" },
-            { label: "Payment Ledger" },
+            { label: "Payment Summary" },
           ]}
         />
+
+        <FinanceFlowGuide page="ledger" />
 
         <header className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
-                Finance
+                Finance — Read Only
               </p>
-              <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">Payment Ledger</h1>
+              <h1 className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">Payment Summary</h1>
               <p className="mt-2 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-                Kis customer se payment aaya, kitni baar aaya, due kitna hai, aur staff ko kitna payment gaya.
+                Track customer incoming, outstanding due, and staff/office outgoing — all in one place. Do not add new entries here.
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Link href="/payments" className={btnSecondary}>
-                Payments
+                + Customer Payment
               </Link>
               <button type="button" onClick={load} className={btnPrimary}>
                 <RefreshCw className="size-4" />
@@ -129,15 +132,15 @@ export default function PaymentLedgerPage() {
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
               <StatCard label="Expected From Customers" value={money(data.stats.totalExpected)} icon={<IndianRupee className="size-5" />} />
               <StatCard label="Received" value={money(data.stats.totalReceived)} icon={<ArrowDownCircle className="size-5" />} positive />
-              <StatCard label="Customer Due" value={money(data.stats.totalDue)} icon={<CreditCard className="size-5" />} negative={data.stats.totalDue > 0} />
-              <StatCard label="Staff Paid" value={money(data.stats.outgoingPaid)} icon={<ArrowUpCircle className="size-5" />} />
+              <StatCard label="Customer Due (outstanding)" value={money(data.stats.totalDue)} icon={<CreditCard className="size-5" />} negative={data.stats.totalDue > 0} />
+              <StatCard label="Staff + Office Paid" value={money(data.stats.outgoingPaid)} icon={<ArrowUpCircle className="size-5" />} />
             </div>
 
             <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="font-bold text-slate-900 dark:text-white">Customer / Project Invoices</h2>
-                  <p className="text-xs text-slate-500">Payment aaya ya pending hai, yahan clear dikhega.</p>
+                  <h2 className="font-bold text-slate-900 dark:text-white">Customer Payments (Incoming)</h2>
+                  <p className="text-xs text-slate-500">Expected from customer, amount received, and balance due.</p>
                 </div>
                 <select
                   value={filter}
@@ -188,8 +191,8 @@ export default function PaymentLedgerPage() {
 
             <div className="grid gap-6 lg:grid-cols-2">
               <LedgerList
-                title="Payment Received History"
-                empty="Abhi koi payment received history nahi hai."
+                title="Payment Received (when & how much)"
+                empty="No payment received history yet. Record payments from Customer Payments."
                 rows={data.incomingTransactions.map((row) => ({
                   id: row.id,
                   title: `${row.clientName} · ${row.projectName}`,
@@ -200,8 +203,8 @@ export default function PaymentLedgerPage() {
               />
 
               <LedgerList
-                title="Staff / Employee Outgoing"
-                empty="Abhi koi salary ya staff expense record nahi hai."
+                title="Money OUT (Staff, Salary, Office)"
+                empty="No outgoing records yet."
                 rows={data.outgoingTransactions.map((row) => ({
                   id: `${row.type}-${row.id}`,
                   title: `${row.employeeName} · ${row.type}`,

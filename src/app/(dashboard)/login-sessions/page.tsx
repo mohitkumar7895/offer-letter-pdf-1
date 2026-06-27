@@ -67,7 +67,7 @@ export default function LoginSessionsPage() {
           </p>
           <h1 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">Login Sessions</h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Aaj ka login/online time yahan dikhega. Daily summary separately store nahi hoti, session data se calculate hota hai.
+            Today&apos;s login and online time appears here. Daily summary is calculated from session data, not stored separately.
           </p>
         </header>
 

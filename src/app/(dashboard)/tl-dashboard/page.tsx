@@ -123,20 +123,20 @@ export default function TlDashboardPage() {
           </p>
           <h1 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">TL Dashboard</h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Apne under employees dekho, task assign karo, aur employee progress/remarks track karo.
+            View employees under you, assign tasks, and track progress and remarks.
           </p>
         </header>
 
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
             <h2 className="font-bold text-slate-900 dark:text-white">My Team</h2>
-            <p className="mt-1 text-xs text-slate-500">Ye employees aapke TL ke under assigned hain.</p>
+            <p className="mt-1 text-xs text-slate-500">These employees are assigned under your TL role.</p>
             <div className="mt-4 space-y-3">
               {loading ? (
                 <p className="text-sm text-slate-500">Loading team...</p>
               ) : team.length === 0 ? (
                 <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-500 dark:bg-slate-950/50">
-                  Abhi aapke under koi employee assigned nahi hai.
+                  No employees assigned under you yet.
                 </p>
               ) : (
                 team.map((member) => (
@@ -158,7 +158,7 @@ export default function TlDashboardPage() {
 
           <section className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
             <h2 className="font-bold text-slate-900 dark:text-white">Assign Task</h2>
-            <p className="mt-1 text-xs text-slate-500">Task assign karte hi employee dashboard aur notifications mein dikhega.</p>
+            <p className="mt-1 text-xs text-slate-500">Once assigned, tasks appear on the employee dashboard and in notifications.</p>
             <div className="mt-4 grid gap-3">
               <select className={formSelect} value={form.assignedStaffId} onChange={(e) => setForm((p) => ({ ...p, assignedStaffId: e.target.value }))}>
                 <option value="">Select employee</option>

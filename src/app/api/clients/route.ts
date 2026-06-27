@@ -1,63 +1,136 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import connectDB from "@/lib/mongodb";
 import Client from "@/models/Client";
 import { handleApiError, jsonError } from "@/lib/apiResponse";
+import { requireAuth } from "@/lib/apiAuth";
+import { requireModuleAuth } from "@/lib/modules/apiHelpers";
+import {
+  clientPayloadSchema,
+  mapClientPayload,
+  mapClientListItem,
+  mapClientDetail,
+} from "@/lib/clients";
+import {
+  parseListQuery,
+  buildSoftDeleteFilter,
+  buildSearchFilter,
+  buildSort,
+  paginated,
+  skip,
+} from "@/lib/modules/query";
 
-const nullableDateField = z.preprocess((value) => {
-  if (value === "" || value === null || value === undefined) return undefined;
-  return value;
-}, z.coerce.date().optional());
+export async function GET(request: Request) {
+  const auth = await requireAuth(["Admin", "HR", "TL"]);
+  if ("error" in auth) return auth.error;
 
-const clientPayloadSchema = z.object({
-  name: z.string().trim().min(1, "Name is required"),
-  mobileNumber: z.string().trim().min(1, "Mobile number is required"),
-  email: z.string().trim().email().optional().or(z.literal("")).nullable(),
-  address: z.string().trim().optional().or(z.literal("")).nullable(),
-  city: z.string().trim().optional().or(z.literal("")).nullable(),
-  state: z.string().trim().optional().or(z.literal("")).nullable(),
-  status: z
-    .enum(["Work in Progress", "Pending", "Completed (Live)", "Expired / Not Working"])
-    .default("Pending"),
-  domainDetails: z
-    .object({
-      domainName: z.string().trim().optional().or(z.literal("")).nullable(),
-      businessName: z.string().trim().optional().or(z.literal("")).nullable(),
-      category: z.string().trim().optional().or(z.literal("")).nullable(),
-      renewalDate: nullableDateField,
-      domainRegistrar: z.string().trim().optional().or(z.literal("")).nullable(),
-      hostingExpiryDate: nullableDateField,
-      hostingCompany: z.string().trim().optional().or(z.literal("")).nullable(),
-      hostingProvider: z.enum(["Provider", "Others"]).optional().nullable(),
-      remarks: z.string().trim().optional().or(z.literal("")).nullable(),
-    })
-    .optional(),
-});
-
-export async function GET() {
   try {
     await connectDB();
-    const clients = await Client.find({})
-      .select("name mobileNumber email address city state status domainDetails createdAt updatedAt")
-      .sort({ createdAt: -1 })
-      .lean();
-    return NextResponse.json(clients);
+    const url = new URL(request.url);
+    const lite = url.searchParams.get("lite") === "1";
+
+    if (lite) {
+      const items = await Client.find({ ...buildSoftDeleteFilter(false) })
+        .select("_id name mobileNumber status domainDetails.businessName")
+        .sort({ name: 1 })
+        .limit(500)
+        .lean();
+      return NextResponse.json({
+        items: items.map((doc) => ({
+          _id: String(doc._id),
+          name: doc.name,
+          mobileNumber: doc.mobileNumber,
+          status: doc.status,
+          companyName: doc.domainDetails?.businessName || "",
+        })),
+      });
+    }
+
+    const q = parseListQuery(request.url);
+    const searchFilter = buildSearchFilter(q.search || "", [
+      "name",
+      "mobileNumber",
+      "email",
+      "city",
+      "customerNotes",
+      "assignedStaffName",
+    ]);
+
+    const filter: Record<string, unknown> = {
+      ...buildSoftDeleteFilter(q.includeDeleted || false),
+    };
+
+    if (searchFilter.$or) {
+      filter.$and = [{ $or: searchFilter.$or }];
+    }
+
+    if (q.status && q.status !== "All") filter.status = q.status;
+
+    const staffId = url.searchParams.get("staffId");
+    if (staffId === "unassigned") {
+      const unassignedClause = {
+        $or: [
+          { assignedStaffId: null },
+          { assignedStaffId: { $exists: false } },
+          { assignedStaffName: { $in: ["", null] } },
+        ],
+      };
+      filter.$and = [...((filter.$and as unknown[]) || []), unassignedClause];
+    } else if (staffId) {
+      filter.assignedStaffId = staffId;
+    }
+
+    const [total, items, statusCounts] = await Promise.all([
+      Client.countDocuments(filter),
+      Client.find(filter)
+        .select(
+          "name mobileNumber email city state address status customerNotes assignedStaffId assignedStaffName domainDetails.businessName createdAt updatedAt",
+        )
+        .sort(buildSort(q.sortBy || "createdAt", q.sortOrder))
+        .skip(skip(q.page, q.limit))
+        .limit(q.limit)
+        .lean(),
+      Client.aggregate([
+        { $match: buildSoftDeleteFilter(false) },
+        { $group: { _id: "$status", count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    const stats = {
+      total: statusCounts.reduce((sum, row) => sum + row.count, 0),
+      live: statusCounts.find((r) => r._id === "Completed (Live)")?.count || 0,
+      inProgress: statusCounts.find((r) => r._id === "Work in Progress")?.count || 0,
+      pending: statusCounts.find((r) => r._id === "Pending")?.count || 0,
+    };
+
+    return NextResponse.json({
+      ...paginated(items.map(mapClientListItem), q.page, q.limit, total),
+      stats,
+    });
   } catch (error) {
     return handleApiError(error);
   }
 }
 
 export async function POST(request: Request) {
+  const auth = await requireModuleAuth("customer");
+  if ("error" in auth) return auth.error;
+
   try {
     const payload = await request.json();
     const parsed = clientPayloadSchema.safeParse(payload);
     if (!parsed.success) {
-      return jsonError("Invalid client data", 400);
+      return jsonError("Invalid customer data", 400);
     }
 
     await connectDB();
-    const newClient = await Client.create(parsed.data);
-    return NextResponse.json(newClient, { status: 201 });
+    const newClient = await Client.create({
+      ...mapClientPayload(parsed.data),
+      createdBy: auth.user.userId,
+      updatedBy: auth.user.userId,
+    });
+    return NextResponse.json(mapClientDetail(newClient.toObject() as Record<string, unknown>), {
+      status: 201,
+    });
   } catch (error) {
     return handleApiError(error);
   }

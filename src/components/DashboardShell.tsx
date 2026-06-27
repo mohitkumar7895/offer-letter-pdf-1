@@ -24,9 +24,7 @@ function DashboardShellInner({
   initialBranding: CompanyBranding;
 }) {
   const { user } = useAuth();
-  const [branding, setBranding] = useState<CompanyBranding>(
-    () => brandingCache ?? initialBranding,
-  );
+  const [branding, setBranding] = useState<CompanyBranding>(() => brandingCache ?? initialBranding);
 
   useEffect(() => {
     brandingCache = initialBranding;
@@ -45,6 +43,8 @@ function DashboardShellInner({
   );
 }
 
+const MemoDashboardShellInner = memo(DashboardShellInner);
+
 export const DashboardShell = memo(function DashboardShell({
   children,
   initialTheme,
@@ -56,9 +56,9 @@ export const DashboardShell = memo(function DashboardShell({
 }) {
   return (
     <AuthProvider>
-      <DashboardShellInner initialTheme={initialTheme} initialBranding={initialBranding}>
+      <MemoDashboardShellInner initialTheme={initialTheme} initialBranding={initialBranding}>
         {children}
-      </DashboardShellInner>
+      </MemoDashboardShellInner>
     </AuthProvider>
   );
 });

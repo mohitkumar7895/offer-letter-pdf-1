@@ -80,6 +80,8 @@ function NavLink({
   );
 }
 
+const MemoNavLink = memo(NavLink);
+
 function CollapsibleSection({
   section,
   pathname,
@@ -114,7 +116,7 @@ function CollapsibleSection({
         <div className="overflow-hidden">
           <div className="ml-3 flex flex-col gap-0.5 border-l border-slate-200 pl-3 pt-1 dark:border-slate-800">
             {section.items.map((item) => (
-              <NavLink
+              <MemoNavLink
                 key={item.href}
                 item={item}
                 pathname={pathname}
@@ -174,7 +176,7 @@ export const AppSidebar = memo(function AppSidebar({
           ) : null}
         </div>
 
-        <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain p-3">
+        <nav className="custom-scrollbar flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain p-3">
           {sections.map((section) => (
             <div key={section.id} className="space-y-1">
               {!section.collapsible && (
@@ -186,7 +188,7 @@ export const AppSidebar = memo(function AppSidebar({
                 <CollapsibleSection section={section} pathname={pathname} onCloseMobile={onCloseMobile} />
               ) : (
                 section.items.map((item) => (
-                  <NavLink
+                  <MemoNavLink
                     key={item.href}
                     item={item}
                     pathname={pathname}

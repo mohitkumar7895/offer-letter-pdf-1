@@ -23,7 +23,7 @@ export function CustomersPageHeader() {
               {mod.title}
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-              Manage customer accounts, assignments, and domain or hosting details.
+              Customer contact, company, status, and notes — simple record keeping. Domain and hosting are in separate modules.
             </p>
           </div>
         </div>

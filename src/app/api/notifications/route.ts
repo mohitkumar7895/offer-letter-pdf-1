@@ -12,8 +12,12 @@ export async function GET(request: Request) {
     await connectDB();
     const url = new URL(request.url);
     const unreadOnly = url.searchParams.get("unread") === "true";
+    if (auth.user.role === "Employee") {
+      return NextResponse.json({ items: [], unreadCount: 0 });
+    }
+
     const filter: Record<string, unknown> = {
-      $or: [{ userId: auth.user.userId }, { targetRole: auth.user.role }, { targetRole: "all" }, { userId: { $exists: false } }, { userId: null }],
+      type: "task_completed",
     };
     if (unreadOnly) filter.read = false;
 
@@ -38,7 +42,7 @@ export async function PATCH(request: Request) {
     const { id, markAll } = await request.json();
     await connectDB();
     if (markAll) {
-      await Notification.updateMany({ read: false }, { read: true });
+      await Notification.updateMany({ read: false, type: "task_completed" }, { read: true });
       return NextResponse.json({ message: "All marked read" });
     }
     if (id) {

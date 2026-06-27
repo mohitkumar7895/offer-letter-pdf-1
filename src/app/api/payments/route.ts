@@ -6,6 +6,8 @@ import { parseListQuery, buildSoftDeleteFilter, buildSort, paginated, skip } fro
 import { paymentSchema, recordPaymentSchema } from "@/lib/modules/schemas";
 import { logAudit, getClientIp } from "@/lib/audit";
 import { createNotification } from "@/lib/notifications";
+import Client from "@/models/Client";
+import Project from "@/models/modules/Project";
 import MarketingPayment, { PaymentHistory } from "@/models/modules/MarketingPayment";
 
 function calcDue(total: number, paid: number, discount: number) {
@@ -36,7 +38,23 @@ export async function GET(request: Request) {
     };
     const total = await MarketingPayment.countDocuments(filter);
     const items = await MarketingPayment.find(filter).sort(buildSort("createdAt", "desc")).skip(skip(q.page, q.limit)).limit(q.limit).lean();
-    return NextResponse.json(paginated(mapDocs(items), q.page, q.limit, total));
+
+    const clientIds = [...new Set(items.map((i) => String(i.clientId)).filter(Boolean))];
+    const projectIds = [...new Set(items.map((i) => String(i.projectId)).filter(Boolean))];
+    const [clients, projects] = await Promise.all([
+      clientIds.length ? Client.find({ _id: { $in: clientIds } }).select("name").lean() : [],
+      projectIds.length ? Project.find({ _id: { $in: projectIds } }).select("name").lean() : [],
+    ]);
+    const clientNames = Object.fromEntries(clients.map((c) => [String(c._id), c.name]));
+    const projectNames = Object.fromEntries(projects.map((p) => [String(p._id), p.name]));
+
+    const enriched = items.map((item) => ({
+      ...item,
+      clientName: clientNames[String(item.clientId)] || "",
+      projectName: projectNames[String(item.projectId)] || "",
+    }));
+
+    return NextResponse.json(paginated(mapDocs(enriched), q.page, q.limit, total));
   } catch (error) {
     return handleApiError(error);
   }

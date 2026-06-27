@@ -118,7 +118,7 @@ export default function EmployeeDashboardPage() {
           </p>
           <h1 className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">My Dashboard</h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Admin ya TL se assigned tasks yahan dikhenge. Status, remark aur time update kar sakte ho.
+            Tasks assigned by Admin or TL appear here. You can update status, remarks, and time.
           </p>
         </header>
 
@@ -136,7 +136,7 @@ export default function EmployeeDashboardPage() {
         ) : tasks.length === 0 ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-900">
             <h2 className="font-bold text-slate-900 dark:text-white">No task assigned</h2>
-            <p className="mt-1 text-sm text-slate-500">Admin/TL task assign karega to yahan dikhega.</p>
+            <p className="mt-1 text-sm text-slate-500">When Admin or TL assigns a task, it will appear here.</p>
           </div>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2">

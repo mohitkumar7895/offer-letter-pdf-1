@@ -10,6 +10,7 @@ export const NOTIFICATION_TYPES = [
   "salary_due",
   "maintenance_request",
   "task_assigned",
+  "task_completed",
   "expense_approval",
   "general",
 ] as const;

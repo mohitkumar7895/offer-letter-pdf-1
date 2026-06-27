@@ -3,6 +3,7 @@ import connectDB from "@/lib/mongodb";
 import { handleApiError, jsonError } from "@/lib/apiResponse";
 import { requireModuleAuth } from "@/lib/modules/apiHelpers";
 import { projectUpdateSchema } from "@/lib/modules/schemas";
+import { syncProjectLinks } from "@/lib/modules/projectLinks";
 import { logAudit, getClientIp } from "@/lib/audit";
 import { createNotification } from "@/lib/notifications";
 import Project from "@/models/modules/Project";
@@ -66,6 +67,18 @@ export async function PATCH(request: Request, ctx: RouteContext<"/api/projects/[
       { new: true, runValidators: true },
     ).lean();
     if (!item) return jsonError("Project not found", 404);
+
+    const clientId = String(parsed.data.clientId ?? item.clientId);
+    await syncProjectLinks({
+      projectId: id,
+      clientId,
+      projectName: item.name,
+      body,
+      userId: auth.user.userId,
+      domainId: body.domainId ? String(body.domainId) : undefined,
+      paymentId: body.paymentId ? String(body.paymentId) : undefined,
+      maintenanceId: body.maintenanceId ? String(body.maintenanceId) : undefined,
+    });
 
     if (parsed.data.status === "Completed") {
       await createNotification({

@@ -8,6 +8,7 @@ import Project from "@/models/modules/Project";
 import MarketingPayment, { PaymentHistory } from "@/models/modules/MarketingPayment";
 import SalaryRecord from "@/models/modules/SalaryRecord";
 import StaffExpense from "@/models/modules/StaffExpense";
+import OfficeExpense from "@/models/modules/OfficeExpense";
 
 type IdMap = Record<string, string>;
 
@@ -41,10 +42,11 @@ export async function GET(request: Request) {
       expenseFilter.employeeId = employeeId;
     }
 
-    const [payments, salaries, staffExpenses, clients, projects, employees] = await Promise.all([
+    const [payments, salaries, staffExpenses, officeExpenses, clients, projects, employees] = await Promise.all([
       MarketingPayment.find(paymentFilter).sort({ createdAt: -1 }).lean(),
       SalaryRecord.find(salaryFilter).sort({ createdAt: -1 }).lean(),
       StaffExpense.find(expenseFilter).sort({ expenseDate: -1 }).lean(),
+      OfficeExpense.find({ deletedAt: null }).sort({ expenseDate: -1 }).lean(),
       Client.find({ deletedAt: null }).select("name mobileNumber email").lean(),
       Project.find({ deletedAt: null }).select("name clientId").lean(),
       Employee.find({}).select("employeeName email designation").lean(),
@@ -146,6 +148,16 @@ export async function GET(request: Request) {
         status: expense.status,
         date: dateValue(expense),
         description: `${expense.category} expense`,
+      })),
+      ...officeExpenses.map((expense) => ({
+        id: key(expense._id),
+        type: "Office Expense",
+        employeeId: "",
+        employeeName: expense.title || expense.category || "Office",
+        amount: expense.amount || 0,
+        status: "Paid",
+        date: dateValue(expense),
+        description: `${expense.category}${expense.vendor ? ` · ${expense.vendor}` : ""}`,
       })),
     ].sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
 

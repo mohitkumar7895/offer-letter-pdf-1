@@ -11,24 +11,11 @@ import {
   skip,
 } from "@/lib/modules/query";
 import { projectCreateSchema } from "@/lib/modules/schemas";
+import { syncProjectLinks } from "@/lib/modules/projectLinks";
 import { logAudit, getClientIp } from "@/lib/audit";
 import { createNotification } from "@/lib/notifications";
 import Project from "@/models/modules/Project";
 import { CustomerActivity } from "@/models/modules/CustomerActivity";
-import Domain, { DomainHistory } from "@/models/modules/Domain";
-import MarketingPayment from "@/models/modules/MarketingPayment";
-import MaintenanceService, { ServiceHistory } from "@/models/modules/MaintenanceService";
-
-function calcDue(total: number, paid: number, discount: number) {
-  return Math.max(0, total - discount - paid);
-}
-
-function calcPaymentStatus(total: number, paid: number, discount: number) {
-  const due = calcDue(total, paid, discount);
-  if (due <= 0) return "Paid";
-  if (paid > 0) return "Partial";
-  return "Pending";
-}
 
 export async function GET(request: Request) {
   const auth = await requireModuleAuth("project");
@@ -86,94 +73,13 @@ export async function POST(request: Request) {
       changedBy: auth.user.userId,
     });
 
-    const linkedCreates: Promise<unknown>[] = [];
-    const domainName = String(body.domainName || "").trim();
-    if (domainName) {
-      linkedCreates.push(
-        Domain.create({
-          clientId: parsed.data.clientId,
-          projectId: item._id,
-          domainName,
-          registrar: String(body.domainRegistrar || "").trim(),
-          purchaseDate: body.domainPurchaseDate || null,
-          expiryDate: body.domainExpiryDate || null,
-          hostingProvider: String(body.hostingProvider || "").trim(),
-          notes: String(body.domainNotes || "").trim(),
-          createdBy: auth.user.userId,
-          updatedBy: auth.user.userId,
-        }).then((domain) =>
-          DomainHistory.create({
-            domainId: domain._id,
-            action: "created",
-            details: `Created from project: ${item.name}`,
-            changedBy: auth.user.userId,
-          }),
-        ),
-      );
-    }
-
-    const totalAmount = Number(body.paymentTotalAmount || body.totalAmount || 0);
-    if (totalAmount > 0) {
-      const paidAmount = Number(body.paidAmount || 0);
-      const discount = Number(body.discount || 0);
-      const dueAmount = calcDue(totalAmount, paidAmount, discount);
-      linkedCreates.push(
-        MarketingPayment.create({
-          clientId: parsed.data.clientId,
-          projectId: item._id,
-          invoiceNumber: String(body.invoiceNumber || "").trim(),
-          paymentType: String(body.paymentType || "One Time"),
-          totalAmount,
-          paidAmount,
-          dueAmount,
-          gstPercent: Number(body.gstPercent || 18),
-          discount,
-          status: calcPaymentStatus(totalAmount, paidAmount, discount),
-          dueDate: body.paymentDueDate || null,
-          notes: String(body.paymentNotes || "").trim(),
-          createdBy: auth.user.userId,
-          updatedBy: auth.user.userId,
-        }),
-      );
-    }
-
-    const maintenanceType = String(body.maintenanceType || "No Maintenance");
-    if (maintenanceType && maintenanceType !== "No Maintenance") {
-      linkedCreates.push(
-        MaintenanceService.create({
-          clientId: parsed.data.clientId,
-          projectId: item._id,
-          serviceType: maintenanceType,
-          title: String(body.maintenanceTitle || `${item.name} Maintenance`),
-          description: String(body.maintenanceDescription || "").trim(),
-          status: "Active",
-          startDate: body.maintenanceStartDate || null,
-          expiryDate: body.maintenanceExpiryDate || null,
-          renewalDate: body.maintenanceRenewalDate || null,
-          createdBy: auth.user.userId,
-          updatedBy: auth.user.userId,
-        }).then((service) =>
-          ServiceHistory.create({
-            serviceId: service._id,
-            action: "created",
-            details: `Created from project: ${item.name}`,
-            changedBy: auth.user.userId,
-          }),
-        ),
-      );
-    }
-
-    if (linkedCreates.length > 0) {
-      await Promise.all(linkedCreates);
-      await CustomerActivity.create({
-        clientId: parsed.data.clientId,
-        action: "project_links_created",
-        details: `Linked records created for project: ${item.name}`,
-        module: "project",
-        entityId: String(item._id),
-        changedBy: auth.user.userId,
-      });
-    }
+    await syncProjectLinks({
+      projectId: String(item._id),
+      clientId: parsed.data.clientId,
+      projectName: item.name,
+      body,
+      userId: auth.user.userId,
+    });
 
     await logAudit({
       userId: auth.user.userId,

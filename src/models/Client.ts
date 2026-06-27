@@ -71,6 +71,8 @@ const ClientSchema = new Schema<IClientDocument>(
   }
 );
 
+ClientSchema.index({ assignedStaffId: 1, createdAt: -1 });
+ClientSchema.index({ name: 1 });
 ClientSchema.index({ createdAt: -1 });
 ClientSchema.index({ status: 1, createdAt: -1 });
 ClientSchema.index({ mobileNumber: 1 });

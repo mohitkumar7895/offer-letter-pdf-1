@@ -182,11 +182,11 @@ export default function AttendancePayrollPage() {
 
   const handleSave = async () => {
     if (!form.selectedKey || !form.employeeName) {
-      toast.error("Pehle employee select karo");
+      toast.error("Select an employee first");
       return;
     }
     if (!form.monthlySalary) {
-      toast.error("Monthly salary enter karo");
+      toast.error("Enter monthly salary");
       return;
     }
     setSaving(true);
@@ -227,7 +227,7 @@ export default function AttendancePayrollPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Yeh saved calculation delete karni hai?")) return;
+    if (!confirm("Delete this saved calculation?")) return;
     setDeletingId(id);
     try {
       const res = await fetch(`/api/salary-calculations/${id}`, { method: "DELETE" });
@@ -259,7 +259,7 @@ export default function AttendancePayrollPage() {
       deductionDays: record.deductionDays,
     });
     setViewRecord(null);
-    toast.success("Form mein load ho gaya");
+    toast.success("Loaded into form");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -284,7 +284,7 @@ export default function AttendancePayrollPage() {
                 Simple Salary Calculator
               </h1>
               <p className="mt-2 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-                Employee select karo, salary calculate karo, save karo — baad mein poori details dekh sakte ho.
+                Select an employee, calculate salary, and save — view full details anytime later.
               </p>
             </div>
             <div className="flex size-12 items-center justify-center rounded-2xl bg-cyan-600 text-white">
@@ -298,7 +298,7 @@ export default function AttendancePayrollPage() {
             <div className="mb-5 flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
               <div>
                 <h2 className="font-bold text-slate-900 dark:text-white">Salary Details</h2>
-                <p className="text-xs text-slate-500">Dropdown se employee naam select karo — details neeche verify ho jayengi.</p>
+                <p className="text-xs text-slate-500">Select employee name from the dropdown — details below will update for verification.</p>
               </div>
               <button type="button" onClick={() => setForm(initialForm)} className={btnSecondary}>
                 <RotateCcw className="size-4" />
@@ -520,7 +520,7 @@ export default function AttendancePayrollPage() {
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="font-bold text-slate-900 dark:text-white">Saved Calculations</h2>
-              <p className="text-xs text-slate-500">Jo bhi save kiya hai — poori details yahan dikhegi.</p>
+              <p className="text-xs text-slate-500">All saved calculations with full details appear here.</p>
             </div>
             <button type="button" onClick={loadSaved} className={btnSecondary}>
               Refresh
@@ -531,7 +531,7 @@ export default function AttendancePayrollPage() {
             <p className="text-sm text-slate-500">Loading saved records…</p>
           ) : savedRecords.length === 0 ? (
             <p className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-700">
-              Abhi koi saved calculation nahi. Calculate karke Save dabao.
+              No saved calculations yet. Calculate and click Save.
             </p>
           ) : (
             <div className="space-y-3">

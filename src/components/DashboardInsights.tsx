@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { fetchJsonCached, getCachedJson } from "@/lib/clientDataCache";
 import { StatCard, StatCardSkeleton } from "@/components/modules/StatCard";
@@ -20,108 +20,135 @@ const QUICK_LINKS = [
   ["/projects", "Projects"],
   ["/payments", "Payments"],
   ["/maintenance", "Maintenance"],
-  ["/renewals", "Renewals"],
   ["/domains", "Domains"],
   ["/tasks", "Tasks"],
   ["/reports", "Reports"],
-  ["/notifications", "Notifications"],
 ] as const;
 
-export function DashboardInsights() {
+const KPI_CARDS: {
+  key: string;
+  title: string;
+  icon: "Users" | "UserCircle" | "Briefcase" | "Shield" | "CreditCard" | "Clock" | "FileText" | "TrendingUp";
+  color: "blue" | "green" | "indigo" | "red" | "orange";
+  money?: boolean;
+}[] = [
+  { key: "totalCustomers", title: "Total Customers", icon: "Users", color: "blue" },
+  { key: "activeCustomers", title: "Active Customers", icon: "UserCircle", color: "green" },
+  { key: "activeProjects", title: "Active Projects", icon: "Briefcase", color: "indigo" },
+  { key: "completedProjects", title: "Completed Projects", icon: "Shield", color: "green" },
+  { key: "monthlyRevenue", title: "Monthly Revenue", icon: "CreditCard", color: "green", money: true },
+  { key: "pendingPayments", title: "Pending Payments", icon: "Clock", color: "red" },
+  { key: "officeExpenses", title: "Office Expenses", icon: "FileText", color: "orange", money: true },
+  { key: "staffExpenses", title: "Staff Expenses", icon: "TrendingUp", color: "orange", money: true },
+  { key: "totalLeads", title: "Total Leads", icon: "Users", color: "indigo" },
+  { key: "convertedLeads", title: "Converted Leads", icon: "Shield", color: "green" },
+  { key: "maintenanceCustomers", title: "Maintenance Active", icon: "Briefcase", color: "orange" },
+  { key: "monthlyServices", title: "Monthly Services", icon: "Clock", color: "indigo" },
+  { key: "pendingTasks", title: "Pending Tasks", icon: "FileText", color: "orange" },
+  { key: "domainExpiry", title: "Domain Expiry (30d)", icon: "Shield", color: "orange" },
+];
+
+function formatKpiValue(value: number | undefined, money?: boolean) {
+  const n = value ?? 0;
+  return money ? `₹${n.toLocaleString()}` : n;
+}
+
+export const DashboardInsights = memo(function DashboardInsights() {
   const [stats, setStats] = useState<DashboardStats | null>(() =>
     getCachedJson<DashboardStats>("/api/dashboard/stats") ?? null,
   );
 
   useEffect(() => {
+    let active = true;
     fetchJsonCached<DashboardStats>("/api/dashboard/stats")
-      .then(setStats)
+      .then((data) => {
+        if (active) setStats(data);
+      })
       .catch(() => {});
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const c = stats?.cards;
+  const salaryChart = useMemo(
+    () => stats?.charts.salaryByMonth?.map((s) => ({ _id: `Month ${s._id}`, count: s.total })) ?? [],
+    [stats?.charts.salaryByMonth],
+  );
+
+  const cards = stats?.cards;
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/70 sm:p-6">
-        <div className="mb-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-600 dark:text-cyan-300">
-            Business & Service
-          </p>
-          <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            Analytics overview
-          </h2>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Combined business KPIs and service operations — no duplicate pages.
-          </p>
-        </div>
+    <section className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 shadow-sm backdrop-blur dark:border-slate-700 dark:bg-slate-900/70 sm:p-6">
+      <div className="mb-5">
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-600 dark:text-cyan-300">
+          Business & Service
+        </p>
+        <h2 className="mt-1 text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          Analytics Overview
+        </h2>
+        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+          Customers, projects, payments, and operations at a glance.
+        </p>
+      </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {!c ? (
-            <StatCardSkeleton count={12} />
-          ) : (
-            <>
-              <StatCard title="Total Customers" value={c.totalCustomers ?? 0} icon="Users" color="blue" />
-              <StatCard title="Active Customers" value={c.activeCustomers ?? 0} icon="UserCircle" color="green" />
-              <StatCard title="Active Projects" value={c.activeProjects ?? 0} icon="Briefcase" color="indigo" />
-              <StatCard title="Completed Projects" value={c.completedProjects ?? 0} icon="Shield" color="green" />
-              <StatCard title="Monthly Revenue" value={`₹${(c.monthlyRevenue || 0).toLocaleString()}`} icon="CreditCard" color="green" />
-              <StatCard title="Pending Payments" value={c.pendingPayments ?? 0} icon="Clock" color="red" />
-              <StatCard title="Office Expenses" value={`₹${(c.officeExpenses || 0).toLocaleString()}`} icon="FileText" color="orange" />
-              <StatCard title="Staff Expenses" value={`₹${(c.staffExpenses || 0).toLocaleString()}`} icon="TrendingUp" color="orange" />
-              <StatCard title="Total Leads" value={c.totalLeads ?? 0} icon="Users" color="indigo" />
-              <StatCard title="Converted Leads" value={c.convertedLeads ?? 0} icon="Shield" color="green" />
-              <StatCard title="Maintenance Active" value={c.maintenanceCustomers ?? 0} icon="Briefcase" color="orange" />
-              <StatCard title="Monthly Services" value={c.monthlyServices ?? 0} icon="Clock" color="indigo" />
-              <StatCard title="Pending Tasks" value={c.pendingTasks ?? 0} icon="FileText" color="orange" />
-              <StatCard title="Renewals Due" value={c.upcomingRenewals ?? 0} icon="TrendingUp" color="red" />
-              <StatCard title="Domain Expiry (30d)" value={c.domainExpiry ?? 0} icon="Shield" color="orange" />
-            </>
-          )}
-        </div>
-      </section>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {!cards ? (
+          <StatCardSkeleton count={8} />
+        ) : (
+          KPI_CARDS.map((kpi) => (
+            <StatCard
+              key={kpi.key}
+              title={kpi.title}
+              value={formatKpiValue(cards[kpi.key] as number | undefined, kpi.money)}
+              icon={kpi.icon}
+              color={kpi.color}
+            />
+          ))
+        )}
+      </div>
 
-      {stats?.charts && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      {stats?.charts ? (
+        <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
           <ChartCard title="Leads by Status" data={stats.charts.leadsByStatus} />
           <ChartCard title="Projects by Status" data={stats.charts.projectsByStatus} />
           <ChartCard title="Office Expenses by Category" data={stats.charts.expensesByCategory} valueKey="total" />
-          <ChartCard
-            title="Salary by Month"
-            data={stats.charts.salaryByMonth?.map((s) => ({ _id: `Month ${s._id}`, count: s.total }))}
-            valueKey="count"
-          />
+          <ChartCard title="Salary by Month" data={salaryChart} valueKey="count" />
         </div>
-      )}
+      ) : null}
 
-      <div className="flex flex-wrap gap-3">
+      <div className="mt-6 flex flex-wrap gap-2">
         {QUICK_LINKS.map(([href, label]) => (
           <Link
             key={href}
             href={href}
-            className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold transition-colors hover:border-cyan-400 dark:border-slate-800 dark:bg-slate-900"
+            className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold transition-colors hover:border-cyan-400 dark:border-slate-800 dark:bg-slate-900 sm:px-4 sm:text-sm"
           >
             {label}
           </Link>
         ))}
       </div>
-    </div>
+    </section>
   );
-}
+});
 
-function ChartCard({
+const ChartCard = memo(function ChartCard({
   title,
   data,
   valueKey = "count",
 }: {
   title: string;
   data?: { _id: string | number; count?: number; total?: number }[];
-  valueKey?: string;
+  valueKey?: "count" | "total";
 }) {
   const items = data || [];
-  const max = Math.max(...items.map((d) => (valueKey === "total" ? d.total : d.count) || 0), 1);
+  const max = useMemo(
+    () => Math.max(...items.map((d) => (valueKey === "total" ? d.total : d.count) || 0), 1),
+    [items, valueKey],
+  );
+
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-      <h3 className="mb-4 font-bold text-slate-900 dark:text-white">{title}</h3>
+    <div className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
+      <h3 className="mb-4 text-sm font-bold text-slate-900 dark:text-white">{title}</h3>
       {items.length === 0 ? (
         <p className="text-sm text-slate-500">No data yet</p>
       ) : (
@@ -131,11 +158,14 @@ function ChartCard({
             return (
               <div key={String(d._id)}>
                 <div className="mb-1 flex justify-between text-xs">
-                  <span>{String(d._id)}</span>
-                  <span>{val}</span>
+                  <span className="truncate pr-2">{String(d._id)}</span>
+                  <span className="shrink-0 tabular-nums">{val.toLocaleString()}</span>
                 </div>
                 <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800">
-                  <div className="h-2 rounded-full bg-cyan-500" style={{ width: `${(val / max) * 100}%` }} />
+                  <div
+                    className="h-2 rounded-full bg-cyan-500 transition-[width] duration-300"
+                    style={{ width: `${(val / max) * 100}%` }}
+                  />
                 </div>
               </div>
             );
@@ -144,4 +174,4 @@ function ChartCard({
       )}
     </div>
   );
-}
+});

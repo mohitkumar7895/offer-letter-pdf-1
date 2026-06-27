@@ -48,3 +48,8 @@ export async function fetchSessionUser(options?: { force?: boolean }): Promise<S
 export function clearSessionCache() {
   sessionCache = null;
 }
+
+export function isSessionStale(maxAgeMs = 30_000): boolean {
+  if (!sessionCache) return true;
+  return Date.now() - sessionCache.fetchedAt > maxAgeMs;
+}

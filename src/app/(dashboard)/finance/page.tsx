@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function ServiceChargesRedirectPage() {
+export default function FinanceRedirectPage() {
   redirect("/payments");
 }

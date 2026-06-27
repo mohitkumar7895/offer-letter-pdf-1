@@ -173,12 +173,14 @@ export function PageShell({
   subtitle,
   breadcrumbs,
   action,
+  headerExtra,
   children,
 }: {
   title: string;
   subtitle?: string;
   breadcrumbs?: React.ReactNode;
   action?: React.ReactNode;
+  headerExtra?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -191,6 +193,7 @@ export function PageShell({
         </div>
         {action}
       </div>
+      {headerExtra}
       {children}
     </div>
   );

@@ -12,6 +12,7 @@ import {
   fetchSessionUser,
   getCachedSessionUser,
   clearSessionCache,
+  isSessionStale,
   type SessionUser,
 } from "@/lib/clientSession";
 
@@ -38,6 +39,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const hit = getCachedSessionUser();
     if (hit !== undefined) {
       setLoading(false);
+      if (isSessionStale()) {
+        fetchSessionUser({ force: true })
+          .then((next) => setUser(next))
+          .catch(() => {});
+      }
       return;
     }
 

@@ -135,31 +135,44 @@ export async function PUT(request: Request) {
     const statusText = String(item.status || parsed.data.status || "Updated");
     const actorName = auth.user.name || auth.user.email;
     const taskTitle = String(item.title || "Task");
-    const adminMessage =
-      auth.user.role === "Employee"
-        ? `${actorName} marked "${taskTitle}" as ${statusText}${parsed.data.employeeRemark ? `: ${parsed.data.employeeRemark}` : ""}`
-        : `${actorName} updated "${taskTitle}" to ${statusText}`;
-    await Promise.all([
-      createNotification({
+    if (auth.user.role === "Employee" && parsed.data.status === "Completed") {
+      const remark = parsed.data.employeeRemark ? ` — ${parsed.data.employeeRemark}` : "";
+      const message = `${actorName} completed task: "${taskTitle}"${remark}`;
+      await Promise.all(
+        ["Admin", "HR", "TL"].map((role) =>
+          createNotification({
+            targetRole: role,
+            title: "Task Completed",
+            message,
+            type: "task_completed",
+            link: "/tasks",
+            entityModule: "task",
+            entityId: id,
+          }),
+        ),
+      );
+      if (item.createdBy && String(item.createdBy) !== auth.user.userId) {
+        await createNotification({
+          userId: String(item.createdBy),
+          title: "Task Completed",
+          message,
+          type: "task_completed",
+          link: "/tl-dashboard",
+          entityModule: "task",
+          entityId: id,
+        });
+      }
+    } else if (auth.user.role !== "Employee") {
+      const adminMessage = `${actorName} updated "${taskTitle}" to ${statusText}`;
+      await createNotification({
         title: `Task ${statusText}`,
         message: adminMessage,
         type: "task_assigned",
         link: "/tasks",
         entityModule: "task",
         entityId: id,
-      }),
-      String(item.createdBy || "") && String(item.createdBy || "") !== auth.user.userId
-        ? createNotification({
-            userId: String(item.createdBy),
-            title: `Task ${statusText}`,
-            message: adminMessage,
-            type: "task_assigned",
-            link: "/tl-dashboard",
-            entityModule: "task",
-            entityId: id,
-          })
-        : Promise.resolve(null),
-    ]);
+      });
+    }
     return NextResponse.json({ item: { ...item, _id: String(item._id) } });
   } catch (error) {
     return handleApiError(error);

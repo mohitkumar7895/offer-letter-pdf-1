@@ -1,12 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { fetchJsonCached, getCachedJson } from "@/lib/clientDataCache";
 import { DashboardClient } from "@/components/DashboardClient";
-import { DashboardInsights } from "@/components/DashboardInsights";
 import { useAuth } from "@/components/AuthProvider";
 import type { DashboardItem } from "@/lib/dashboardTypes";
 import { TableSkeleton } from "@/components/SkeletonLoader";
+
+const DashboardInsights = dynamic(
+  () => import("@/components/DashboardInsights").then((m) => m.DashboardInsights),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-48 animate-pulse rounded-3xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900" />
+    ),
+  },
+);
 
 type HomeData = {
   items: DashboardItem[];
@@ -18,16 +28,19 @@ type HomeData = {
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const [data, setData] = useState<HomeData | null>(null);
+  const [data, setData] = useState<HomeData | null>(() => getCachedJson<HomeData>("/api/dashboard/home") ?? null);
   const showInsights = user?.role === "Admin" || user?.role === "HR";
 
   useEffect(() => {
-    const cached = getCachedJson<HomeData>("/api/dashboard/home");
-    if (cached) setData(cached);
-
+    let active = true;
     fetchJsonCached<HomeData>("/api/dashboard/home")
-      .then(setData)
+      .then((next) => {
+        if (active) setData(next);
+      })
       .catch(() => {});
+    return () => {
+      active = false;
+    };
   }, []);
 
   return (
@@ -42,7 +55,7 @@ export default function DashboardPage() {
               Dashboard
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300">
-              Letters, employee stats, business analytics, and service KPIs in one place.
+              Letters, employee stats, analytics, and business KPIs in one place.
             </p>
           </div>
         </header>
@@ -56,10 +69,9 @@ export default function DashboardPage() {
             employeeTotal={data.employeeTotal}
             roleCounts={data.roleCounts}
             recentEmployees={data.recentEmployees}
+            analyticsSection={showInsights ? <DashboardInsights /> : null}
           />
         )}
-
-        {showInsights ? <DashboardInsights /> : null}
       </div>
     </div>
   );

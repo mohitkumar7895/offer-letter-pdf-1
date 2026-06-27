@@ -26,7 +26,6 @@ export const NAV_SECTIONS: NavSection[] = [
       { href: "/dashboard", label: "Dashboard", description: "Summary, analytics & service KPIs", kind: "Tool", roles: ["Admin", "HR", "TL"] },
       { href: "/employee-dashboard", label: "My Dashboard", description: "My assigned tasks & updates", kind: "Flow", roles: ["Employee"] },
       { href: "/tl-dashboard", label: "TL Dashboard", description: "My team, tasks & progress", kind: "Flow", roles: ["TL"] },
-      { href: "/business-flow", label: "Business Flow", description: "See how modules connect", kind: "Flow", roles: ["Admin", "HR"] },
     ],
   },
   {
@@ -44,7 +43,7 @@ export const NAV_SECTIONS: NavSection[] = [
     label: "Sales & Customers",
     roles: ["Admin", "HR"],
     items: [
-      { href: "/clients", label: "Customers", description: "Customer master & profile", kind: "Record", roles: ["Admin", "HR"] },
+      { href: "/clients", label: "Customers", description: "Contact, company, status & notes", kind: "Record", roles: ["Admin", "HR"] },
       { href: "/sales/leads", label: "Sales Leads", description: "Lead to customer pipeline", kind: "Flow", roles: ["Admin", "HR"] },
     ],
   },
@@ -64,11 +63,10 @@ export const NAV_SECTIONS: NavSection[] = [
     label: "Finance",
     roles: ["Admin", "HR"],
     items: [
-      { href: "/payments", label: "Customer Invoices", description: "Customer expected/received payments", kind: "Record", roles: ["Admin", "HR"] },
-      { href: "/payment-ledger", label: "Payment Ledger", description: "Money in, due, salary & expenses", kind: "Flow", roles: ["Admin", "HR"] },
-      { href: "/service-charges", label: "Service Charges", description: "Fees, GST & discounts", kind: "Record", roles: ["Admin", "HR"] },
-      { href: "/staff-expenses", label: "Staff Expenses", description: "Employee reimbursements", kind: "Record", roles: ["Admin", "HR", "TL", "Employee"] },
-      { href: "/office-expenses", label: "Office Expenses", description: "Rent, utilities, supplies", kind: "Record", roles: ["Admin", "HR"] },
+      { href: "/payments", label: "Customer Payments", description: "Amount to collect & amount received", kind: "Flow", roles: ["Admin", "HR"] },
+      { href: "/payment-ledger", label: "Payment Summary", description: "Incoming, due & outgoing — read only", kind: "Tool", roles: ["Admin", "HR"] },
+      { href: "/staff-expenses", label: "Staff Expenses", description: "Employee reimbursement (travel, food…)", kind: "Record", roles: ["Admin", "HR", "TL", "Employee"] },
+      { href: "/office-expenses", label: "Office Expenses", description: "Rent, bills, office supplies", kind: "Record", roles: ["Admin", "HR"] },
     ],
   },
   {
@@ -77,7 +75,6 @@ export const NAV_SECTIONS: NavSection[] = [
     roles: ["Admin", "HR", "TL"],
     items: [
       { href: "/maintenance", label: "Maintenance", description: "Project service/AMC records", kind: "Record", roles: ["Admin", "HR", "TL"] },
-      { href: "/renewals", label: "Renewals", description: "Upcoming renewals to collect/follow", kind: "Record", roles: ["Admin", "HR"] },
       { href: "/domains", label: "Domains", description: "Domain tied to customer/project", kind: "Record", roles: ["Admin", "HR"] },
     ],
   },
@@ -118,6 +115,34 @@ export function isNavActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+const rolePrefixCache = new Map<AccessRole, string[]>();
+
+export function getRoleAllowedPrefixes(role: AccessRole): string[] {
+  const cached = rolePrefixCache.get(role);
+  if (cached) return cached;
+  const prefixes = new Set<string>();
+  for (const section of NAV_SECTIONS) {
+    for (const item of section.items) {
+      if (item.roles.includes(role)) prefixes.add(item.href);
+    }
+  }
+  const list = Array.from(prefixes);
+  rolePrefixCache.set(role, list);
+  return list;
+}
+
+export function isPathAllowedForRole(pathname: string, role: AccessRole): boolean {
+  return getRoleAllowedPrefixes(role).some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
+}
+
+export function defaultRouteForRole(role: AccessRole): string {
+  if (role === "Employee") return "/employee-dashboard";
+  if (role === "TL") return "/tl-dashboard";
+  return "/dashboard";
+}
+
 export function findNavItem(pathname: string, role: AccessRole | undefined) {
   if (!role) return null;
   for (const section of NAV_SECTIONS) {
@@ -133,16 +158,14 @@ export function findNavItem(pathname: string, role: AccessRole | undefined) {
 /** Business module registry — route, API, labels aligned */
 export const MODULE_REGISTRY = {
   leads: { route: "/sales/leads", api: "/api/sales/leads", title: "Sales Leads", section: "Sales & Customers" },
-  businessFlow: { route: "/business-flow", api: "/api/dashboard/stats", title: "Business Flow", section: "Overview" },
   customers: { route: "/clients", api: "/api/clients", title: "Customers", section: "Sales & Customers" },
   projects: { route: "/projects", api: "/api/projects", title: "Projects", section: "Projects & Delivery" },
   staffAllocation: { route: "/staff-allocation", api: "/api/staff-allocations", title: "Staff Allocation", section: "Projects & Delivery" },
   milestones: { route: "/milestones", api: "/api/milestones", title: "Milestones", section: "Projects & Delivery" },
   tls: { route: "/tls", api: "/api/tls/assign", title: "TL Management", section: "People & HR" },
   tasks: { route: "/tasks", api: "/api/tasks", title: "Tasks", section: "Projects & Delivery" },
-  payments: { route: "/payments", api: "/api/payments", title: "Payments", section: "Finance" },
-  paymentLedger: { route: "/payment-ledger", api: "/api/payment-ledger", title: "Payment Ledger", section: "Finance" },
-  serviceCharges: { route: "/service-charges", api: "/api/service-charges", title: "Service Charges", section: "Finance" },
+  payments: { route: "/payments", api: "/api/payments", title: "Customer Payments", section: "Finance" },
+  paymentLedger: { route: "/payment-ledger", api: "/api/payment-ledger", title: "Payment Summary", section: "Finance" },
   staffExpenses: { route: "/staff-expenses", api: "/api/staff-expenses", title: "Staff Expenses", section: "Finance" },
   officeExpenses: { route: "/office-expenses", api: "/api/office-expenses", title: "Office Expenses", section: "Finance" },
   maintenance: { route: "/maintenance", api: "/api/maintenance", title: "Maintenance", section: "Service" },

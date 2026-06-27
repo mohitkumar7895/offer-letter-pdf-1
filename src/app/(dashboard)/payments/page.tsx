@@ -2,27 +2,39 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
+import { fetchJsonCached } from "@/lib/clientDataCache";
+import { loadCustomerProject } from "@/lib/modules/customerProject";
+import { FinanceFlowGuide } from "@/components/modules/FinanceFlowGuide";
 import { ModuleCrudPage, StatusBadge } from "@/components/modules/ModuleCrudPage";
 import { moduleBreadcrumbs, MODULE_REGISTRY } from "@/lib/navigation";
 import { PAYMENT_STATUSES, PAYMENT_TYPES } from "@/types/modules/constants";
-import toast from "react-hot-toast";
 
 const mod = MODULE_REGISTRY.payments;
 
-type Payment = { _id: string; invoiceNumber?: string; paymentType: string; totalAmount: number; paidAmount: number; dueAmount: number; status: string };
+type Payment = {
+  _id: string;
+  clientId?: string;
+  clientName?: string;
+  projectId?: string;
+  projectName?: string;
+  invoiceNumber?: string;
+  paymentType: string;
+  totalAmount: number;
+  paidAmount: number;
+  dueAmount: number;
+  status: string;
+  gstPercent?: number;
+  discount?: number;
+};
 
 export default function PaymentsPage() {
   const [clients, setClients] = useState<{ value: string; label: string }[]>([]);
-  const [projects, setProjects] = useState<{ value: string; label: string }[]>([]);
 
   useEffect(() => {
-    Promise.all([fetch("/api/clients"), fetch("/api/projects?limit=100")])
-      .then(async ([clientsRes, projectsRes]) => {
-        const clientsData = await clientsRes.json();
-        const projectsData = await projectsRes.json();
-        const clientList = Array.isArray(clientsData) ? clientsData : clientsData.items || [];
-        setClients(clientList.map((c: { _id: string; name: string }) => ({ value: c._id, label: c.name })));
-        setProjects((projectsData.items || []).map((p: { _id: string; name: string }) => ({ value: p._id, label: p.name })));
+    fetchJsonCached<{ items?: Array<{ _id: string; name: string }> }>("/api/clients?lite=1")
+      .then((data) => {
+        setClients((data.items || []).map((c) => ({ value: c._id, label: c.name })));
       })
       .catch(() => {});
   }, []);
@@ -30,25 +42,72 @@ export default function PaymentsPage() {
   return (
     <ModuleCrudPage<Payment>
       title={mod.title}
-      subtitle="Invoices, receipts, and payment tracking"
+      subtitle="Record how much to collect from the customer and how much has been received"
       apiPath={mod.api}
       breadcrumbs={moduleBreadcrumbs(mod.route)}
       getRowId={(r) => r._id}
+      headerExtra={<FinanceFlowGuide page="payments" />}
+      hiddenFieldKeys={["projectId"]}
+      fetchEditForm={async (row) => {
+        let projectName = row.projectName || "";
+        if (!projectName && row.projectId) {
+          const res = await fetch(`/api/projects/${row.projectId}`, { cache: "no-store" });
+          const data = await res.json();
+          projectName = data.item?.name || "";
+        }
+        return {
+          clientId: String(row.clientId || ""),
+          projectId: String(row.projectId || ""),
+          projectName,
+          invoiceNumber: row.invoiceNumber || "",
+          paymentType: row.paymentType || "One Time",
+          totalAmount: String(row.totalAmount ?? ""),
+          paidAmount: String(row.paidAmount ?? ""),
+          gstPercent: String(row.gstPercent ?? 18),
+          discount: String(row.discount ?? ""),
+        };
+      }}
+      onFieldChange={(key, value, setForm) => {
+        if (key !== "clientId") return;
+        if (!value) {
+          setForm((prev) => ({ ...prev, projectId: "", projectName: "" }));
+          return;
+        }
+        loadCustomerProject(value)
+          .then((project) => {
+            if (!project) {
+              toast.error("No project found for this customer — create one in Projects first");
+              setForm((prev) => ({ ...prev, projectId: "", projectName: "" }));
+              return;
+            }
+            setForm((prev) => ({
+              ...prev,
+              projectId: project._id,
+              projectName: project.name,
+            }));
+          })
+          .catch(() => toast.error("Could not load project"));
+      }}
+      transformPayload={(payload) => {
+        const { projectName: _projectName, ...rest } = payload;
+        return rest;
+      }}
       statusOptions={[{ value: "All", label: "All" }, ...PAYMENT_STATUSES.map((s) => ({ value: s, label: s }))]}
       fields={[
-        { key: "clientId", label: "Customer", type: "select", options: clients, required: true },
-        { key: "projectId", label: "Project", type: "select", options: projects },
-        { key: "invoiceNumber", label: "Invoice #" },
-        { key: "paymentType", label: "Type", type: "select", options: PAYMENT_TYPES.map((t) => ({ value: t, label: t })) },
-        { key: "totalAmount", label: "Total Amount", type: "number", required: true },
-        { key: "paidAmount", label: "Paid Amount", type: "number" },
+        { key: "clientId", label: "Customer (to collect from)", type: "select", options: clients, required: true },
+        { key: "projectName", label: "Project (auto)", readOnly: true },
+        { key: "paymentType", label: "Payment Type", type: "select", options: PAYMENT_TYPES.map((t) => ({ value: t, label: t })) },
+        { key: "totalAmount", label: "Total Amount (₹)", type: "number", required: true },
+        { key: "paidAmount", label: "Already Received (₹)", type: "number" },
+        { key: "invoiceNumber", label: "Invoice / Bill No." },
         { key: "gstPercent", label: "GST %", type: "number" },
-        { key: "discount", label: "Discount", type: "number" },
+        { key: "discount", label: "Discount (₹)", type: "number" },
       ]}
       columns={[
-        { key: "invoiceNumber", label: "Invoice" },
-        { key: "paymentType", label: "Type" },
+        { key: "clientName", label: "Customer", render: (r) => r.clientName || "—" },
+        { key: "projectName", label: "Project", render: (r) => r.projectName || "—" },
         { key: "totalAmount", label: "Total", render: (r) => `₹${r.totalAmount.toLocaleString()}` },
+        { key: "paidAmount", label: "Received", render: (r) => `₹${r.paidAmount.toLocaleString()}` },
         { key: "dueAmount", label: "Due", render: (r) => `₹${r.dueAmount.toLocaleString()}` },
         { key: "status", label: "Status", render: (r) => <StatusBadge status={r.status} /> },
       ]}
@@ -59,11 +118,14 @@ export default function PaymentsPage() {
               type="button"
               className="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white"
               onClick={async () => {
-                const amount = window.prompt(`Received amount for ${row.invoiceNumber || "payment"}`, String(row.dueAmount));
+                const amount = window.prompt(
+                  `How much did ${row.clientName || "Customer"} pay? (Due: ₹${row.dueAmount})`,
+                  String(row.dueAmount),
+                );
                 if (!amount) return;
                 const value = Number(amount);
                 if (!Number.isFinite(value) || value <= 0) {
-                  toast.error("Valid amount dalo");
+                  toast.error("Enter a valid amount");
                   return;
                 }
                 const res = await fetch(`/api/payments?id=${row._id}`, {
@@ -72,7 +134,7 @@ export default function PaymentsPage() {
                   body: JSON.stringify({
                     amount: value,
                     paymentMode: "Bank Transfer",
-                    notes: "Recorded from payments list",
+                    notes: "Recorded from customer payments",
                   }),
                 });
                 const data = await res.json();
@@ -80,18 +142,18 @@ export default function PaymentsPage() {
                   toast.error(data.error || "Payment record failed");
                   return;
                 }
-                toast.success("Payment received recorded");
+                toast.success("Payment received saved");
                 reload();
               }}
             >
-              Record Payment
+              Receive Payment
             </button>
           )}
           <Link
             href="/payment-ledger"
             className="rounded-xl border border-cyan-300 px-3 py-1.5 text-xs font-semibold text-cyan-700 hover:bg-cyan-50 dark:border-cyan-700 dark:text-cyan-300"
           >
-            Ledger
+            Summary
           </Link>
         </>
       )}

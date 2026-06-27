@@ -1,34 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
-import { NAV_SECTIONS } from "@/lib/navigation";
-import type { AccessRole } from "@/types/employee";
-
-function getAllowedPrefixes(role: AccessRole): string[] {
-  const prefixes = new Set<string>();
-  for (const section of NAV_SECTIONS) {
-    for (const item of section.items) {
-      if (item.roles.includes(role)) {
-        prefixes.add(item.href);
-      }
-    }
-  }
-  return Array.from(prefixes);
-}
-
-function isPathAllowed(pathname: string, role: AccessRole): boolean {
-  return getAllowedPrefixes(role).some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  );
-}
-
-function defaultRouteForRole(role: AccessRole): string {
-  if (role === "Employee") return "/employee-dashboard";
-  if (role === "TL") return "/tl-dashboard";
-  return "/dashboard";
-}
+import { defaultRouteForRole, isPathAllowedForRole } from "@/lib/navigation";
 
 function ContentSpinner() {
   return (
@@ -41,7 +16,7 @@ function ContentSpinner() {
   );
 }
 
-export function AuthGuard({ children }: { children: React.ReactNode }) {
+export const AuthGuard = memo(function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, loading } = useAuth();
@@ -57,7 +32,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (!isPathAllowed(pathname, user.role)) {
+    if (!isPathAllowedForRole(pathname, user.role)) {
       router.replace(defaultRouteForRole(user.role));
     }
   }, [isAuthRoute, loading, pathname, router, user]);
@@ -74,5 +49,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     return null;
   }
 
+  if (!isPathAllowedForRole(pathname, user.role)) {
+    return <ContentSpinner />;
+  }
+
   return <>{children}</>;
-}
+});

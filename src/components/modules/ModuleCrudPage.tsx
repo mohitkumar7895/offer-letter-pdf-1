@@ -22,15 +22,7 @@ import {
 } from "@/components/ui/FormUi";
 import { ConfirmDialog } from "@/components/modules/ConfirmDialog";
 import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
-
-const moduleDataCache = new Map<
-  string,
-  {
-    items: Record<string, unknown>[];
-    pagination: { page: number; totalPages: number; total: number };
-    fetchedAt: number;
-  }
->();
+import { fetchJsonCached, getCachedJson, invalidateCachedUrl } from "@/lib/clientDataCache";
 
 const MODULE_CACHE_TTL_MS = 60_000;
 
@@ -40,6 +32,7 @@ export type FieldConfig = {
   type?: "text" | "number" | "date" | "select" | "textarea";
   options?: { value: string; label: string }[];
   required?: boolean;
+  readOnly?: boolean;
 };
 
 type Props<T extends Record<string, unknown>> = {
@@ -65,8 +58,21 @@ type Props<T extends Record<string, unknown>> = {
     form: Record<string, string>,
   ) => Record<string, unknown>;
   mapRowToForm?: (row: T) => Record<string, string>;
+  fetchEditForm?: (row: T) => Promise<Record<string, string>>;
   renderFormExtra?: (form: Record<string, string>) => React.ReactNode;
+  headerExtra?: React.ReactNode;
 };
+
+function formatDateFieldValue(val: unknown): string {
+  if (!val) return "";
+  if (val instanceof Date) {
+    return Number.isNaN(val.getTime()) ? "" : val.toISOString().slice(0, 10);
+  }
+  const s = String(val);
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+}
 
 export function ModuleCrudPage<T extends Record<string, unknown>>({
   title,
@@ -84,7 +90,9 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
   onFieldChange,
   transformPayload,
   mapRowToForm,
+  fetchEditForm,
   renderFormExtra,
+  headerExtra,
 }: Props<T>) {
   const [items, setItems] = useState<T[]>([]);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -97,6 +105,7 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<T | null>(null);
   const [form, setForm] = useState<Record<string, string>>(defaultForm);
+  const [formLoading, setFormLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<T | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -115,11 +124,15 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
       });
       if (status !== "All") params.set("status", status);
       const requestUrl = `${apiPath}?${params}`;
-      const cached = moduleDataCache.get(requestUrl);
+      type ListPayload = {
+        items: T[];
+        pagination: { page: number; totalPages: number; total: number };
+      };
 
-      if (cached && Date.now() - cached.fetchedAt < MODULE_CACHE_TTL_MS) {
-        setItems(cached.items as T[]);
-        setPagination(cached.pagination);
+      const cached = getCachedJson<ListPayload>(requestUrl, MODULE_CACHE_TTL_MS);
+      if (cached) {
+        setItems(cached.items || []);
+        setPagination(cached.pagination || { page: 1, totalPages: 1, total: 0 });
         setInitialLoad(false);
         isFirstLoadRef.current = false;
       }
@@ -132,24 +145,16 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
       }
 
       try {
-        const res = await fetch(requestUrl, {
-          cache: "no-store",
-          signal: controller.signal,
+        const data = await fetchJsonCached<ListPayload>(requestUrl, {
+          ttlMs: MODULE_CACHE_TTL_MS,
+          init: { signal: controller.signal },
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Failed to load");
-        const nextItems = data.items || [];
-        const nextPagination = data.pagination || { page: 1, totalPages: 1, total: 0 };
-        setItems(nextItems);
-        setPagination(nextPagination);
-        moduleDataCache.set(requestUrl, {
-          items: nextItems,
-          pagination: nextPagination,
-          fetchedAt: Date.now(),
-        });
+        if (controller.signal.aborted) return;
+        setItems(data.items || []);
+        setPagination(data.pagination || { page: 1, totalPages: 1, total: 0 });
       } catch (err) {
         if (controller.signal.aborted) return;
-        toast.error(err instanceof Error ? err.message : "Load failed");
+        if (!cached) toast.error(err instanceof Error ? err.message : "Load failed");
       } finally {
         if (!controller.signal.aborted) {
           isFirstLoadRef.current = false;
@@ -180,20 +185,34 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
     setModalOpen(true);
   };
 
-  const openEdit = (row: T) => {
+  const openEdit = async (row: T) => {
     setEditing(row);
+    setModalOpen(true);
+    if (fetchEditForm) {
+      setFormLoading(true);
+      try {
+        setForm(await fetchEditForm(row));
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to load record");
+        setModalOpen(false);
+      } finally {
+        setFormLoading(false);
+      }
+      return;
+    }
     if (mapRowToForm) {
       setForm(mapRowToForm(row));
     } else {
       const next: Record<string, string> = {};
       fields.forEach((f) => {
         const val = row[f.key];
-        next[f.key] =
-          val != null
-            ? String(val).slice(0, 10).includes("T") && f.type === "date"
-              ? String(val).slice(0, 10)
-              : String(val)
-            : "";
+        if (val == null) {
+          next[f.key] = "";
+        } else if (f.type === "date") {
+          next[f.key] = formatDateFieldValue(val);
+        } else {
+          next[f.key] = String(val);
+        }
       });
       hiddenFieldKeys.forEach((key) => {
         const val = row[key];
@@ -201,7 +220,6 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
       });
       setForm(next);
     }
-    setModalOpen(true);
   };
 
   const handleFieldChange = (key: string, value: string) => {
@@ -214,6 +232,10 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
     try {
       const payload: Record<string, unknown> = {};
       fields.forEach((f) => {
+        if (f.type === "date") {
+          payload[f.key] = form[f.key] || null;
+          return;
+        }
         if (form[f.key] !== undefined && form[f.key] !== "") {
           payload[f.key] = f.type === "number" ? Number(form[f.key]) : form[f.key];
         }
@@ -235,7 +257,7 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
       if (!res.ok) throw new Error(data.error || "Save failed");
       toast.success(editing ? "Updated" : "Created");
       setModalOpen(false);
-      clearModuleCache(apiPath);
+      invalidateCachedUrl(apiPath);
       reload();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Save failed");
@@ -251,7 +273,7 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
       if (!res.ok) throw new Error("Delete failed");
       toast.success("Deleted");
       setDeleteTarget(null);
-      clearModuleCache(apiPath);
+      invalidateCachedUrl(apiPath);
       reload();
     } catch {
       toast.error("Delete failed");
@@ -271,6 +293,7 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
         ) : undefined
       }
     >
+      {headerExtra}
       <SearchFilterBar
         search={search}
         onSearchChange={setSearch}
@@ -318,11 +341,14 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
           <FormActions
             onCancel={() => setModalOpen(false)}
             onSubmit={save}
-            loading={saving}
+            loading={saving || formLoading}
             submitLabel={editing ? "Update" : "Create"}
           />
         }
       >
+        {formLoading ? (
+          <p className="py-8 text-center text-sm text-slate-500">Loading details…</p>
+        ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {fields.map((field) => {
             const fullWidth = field.type === "textarea";
@@ -356,16 +382,22 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
                 ) : (
                   <input
                     type={field.type || "text"}
-                    className={formInput}
+                    className={`${formInput}${field.readOnly ? " cursor-not-allowed bg-slate-50 dark:bg-slate-900/50" : ""}`}
                     value={form[field.key] || ""}
-                    onChange={(e) => handleFieldChange(field.key, e.target.value)}
+                    readOnly={field.readOnly}
+                    onChange={
+                      field.readOnly
+                        ? undefined
+                        : (e) => handleFieldChange(field.key, e.target.value)
+                    }
                   />
                 )}
               </FormField>
             );
           })}
         </div>
-        {renderFormExtra?.(form)}
+        )}
+        {!formLoading && renderFormExtra?.(form)}
       </FormModal>
 
       <ConfirmDialog
@@ -382,11 +414,3 @@ export function ModuleCrudPage<T extends Record<string, unknown>>({
 }
 
 export { StatusBadge };
-
-function clearModuleCache(apiPath: string) {
-  for (const key of moduleDataCache.keys()) {
-    if (key.startsWith(`${apiPath}?`)) {
-      moduleDataCache.delete(key);
-    }
-  }
-}
