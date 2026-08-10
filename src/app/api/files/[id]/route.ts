@@ -4,7 +4,7 @@ import Upload from "@/models/Upload";
 
 export async function GET(
   req: Request,
-  context: { params: Promise<{ id: string }> | { id: string } }
+  context: RouteContext<"/api/files/[id]">
 ) {
   try {
     await connectDB();

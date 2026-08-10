@@ -116,19 +116,23 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/sales/leads/
       await connectDB();
       const lead = await Lead.findOne({ _id: id, deletedAt: null });
       if (!lead) return jsonError("Lead not found", 404);
-      if (lead.status === "Converted") return jsonError("Lead already converted", 400);
+      if (lead.status === "Closed") return jsonError("Lead already closed/converted", 400);
 
+      const staffId = lead.assignedTo || auth.user.userId;
       const client = await Client.create({
         name: lead.name,
         mobileNumber: lead.phone,
         email: lead.email || "",
         status: "Pending",
         leadId: lead._id,
+        assignedStaffId: staffId || null,
+        assignedStaffName:
+          lead.assignedToName || auth.user.name || auth.user.email || "",
         createdBy: auth.user.userId,
         updatedBy: auth.user.userId,
       });
 
-      lead.status = "Converted";
+      lead.status = "Closed";
       lead.convertedClientId = client._id;
       lead.convertedAt = new Date();
       lead.updatedBy = auth.user.userId;
@@ -160,6 +164,54 @@ export async function PUT(request: Request, ctx: RouteContext<"/api/sales/leads/
     }
 
     return jsonError("Invalid action", 400);
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+export async function POST(request: Request, ctx: RouteContext<"/api/sales/leads/[id]">) {
+  const auth = await requireModuleAuth("sales");
+  if ("error" in auth) return auth.error;
+
+  try {
+    const { id } = await ctx.params;
+    const body = await request.json();
+    
+    if (!body.note) {
+      return jsonError("Note is required", 400);
+    }
+
+    await connectDB();
+    const lead = await Lead.findOne({ _id: id, deletedAt: null });
+    if (!lead) return jsonError("Lead not found", 404);
+
+    const followUp = await LeadFollowUp.create({
+      leadId: lead._id,
+      note: body.note,
+      followUpDate: body.followUpDate ? new Date(body.followUpDate) : new Date(),
+      status: body.status || lead.status,
+      createdBy: auth.user.userId,
+      createdByName: auth.user.name,
+    });
+
+    // Update lead's status and next follow up date if provided
+    lead.status = body.status || lead.status;
+    if (body.nextFollowUpDate) {
+      lead.nextFollowUpDate = new Date(body.nextFollowUpDate);
+    }
+    await lead.save();
+
+    await logAudit({
+      userId: auth.user.userId,
+      userEmail: auth.user.email,
+      action: "create",
+      module: "sales",
+      entityId: id,
+      details: `Lead follow-up added: ${lead.name}`,
+      ipAddress: getClientIp(request),
+    });
+
+    return NextResponse.json({ followUp: { ...followUp.toObject(), _id: String(followUp._id) } });
   } catch (error) {
     return handleApiError(error);
   }

@@ -2,12 +2,12 @@ import type { AccessRole } from "@/types/employee";
 import type { ModuleName } from "@/types/modules/common";
 
 const MODULE_ROLES: Record<ModuleName, AccessRole[]> = {
-  sales: ["Admin", "HR"],
-  customer: ["Admin", "HR"],
+  sales: ["Admin", "HR", "TL", "Employee"],
+  customer: ["Admin", "HR", "TL", "Employee"],
   project: ["Admin", "HR", "TL"],
   staff_allocation: ["Admin", "HR", "TL"],
   milestone: ["Admin", "HR", "TL"],
-  payment: ["Admin", "HR"],
+  payment: ["Admin", "HR", "TL", "Employee"],
   service_charge: ["Admin", "HR"],
   maintenance: ["Admin", "HR", "TL"],
   renewal: ["Admin", "HR"],

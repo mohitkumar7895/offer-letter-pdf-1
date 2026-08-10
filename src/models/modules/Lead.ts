@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { actorFields, softDeleteFields } from "@/lib/modules/softDelete";
 
-export const LEAD_STATUSES = ["New", "Contacted", "Qualified", "Proposal", "Negotiation", "Converted", "Lost"] as const;
+export const LEAD_STATUSES = ["Draft", "New", "Pending", "In Review", "Approved", "Rejected", "Allocated", "In Progress", "On Hold", "Completed", "Cancelled", "Closed", "Archived"] as const;
 export const LEAD_SOURCES = ["Website", "Referral", "Social Media", "Cold Call", "Email", "Walk-in", "Other"] as const;
 
 export type LeadStatus = (typeof LEAD_STATUSES)[number];

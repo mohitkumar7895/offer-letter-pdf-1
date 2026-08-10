@@ -20,7 +20,7 @@ import {
 } from "@/lib/modules/query";
 
 export async function GET(request: Request) {
-  const auth = await requireAuth(["Admin", "HR", "TL"]);
+  const auth = await requireAuth(["Admin", "HR", "TL", "Employee"]);
   if ("error" in auth) return auth.error;
 
   try {
@@ -29,7 +29,12 @@ export async function GET(request: Request) {
     const lite = url.searchParams.get("lite") === "1";
 
     if (lite) {
-      const items = await Client.find({ ...buildSoftDeleteFilter(false) })
+      const liteFilter: Record<string, unknown> = { ...buildSoftDeleteFilter(false) };
+      if (auth.user.role === "Employee") {
+        liteFilter.assignedStaffId = auth.user.userId;
+      }
+      
+      const items = await Client.find(liteFilter)
         .select("_id name mobileNumber status domainDetails.businessName")
         .sort({ name: 1 })
         .limit(500)
@@ -58,6 +63,10 @@ export async function GET(request: Request) {
     const filter: Record<string, unknown> = {
       ...buildSoftDeleteFilter(q.includeDeleted || false),
     };
+
+    if (auth.user.role === "Employee") {
+      filter.assignedStaffId = auth.user.userId;
+    }
 
     if (searchFilter.$or) {
       filter.$and = [{ $or: searchFilter.$or }];
@@ -90,7 +99,7 @@ export async function GET(request: Request) {
         .limit(q.limit)
         .lean(),
       Client.aggregate([
-        { $match: buildSoftDeleteFilter(false) },
+        { $match: filter },
         { $group: { _id: "$status", count: { $sum: 1 } } },
       ]),
     ]);

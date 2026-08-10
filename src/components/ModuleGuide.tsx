@@ -31,7 +31,7 @@ export function ModuleGuide() {
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {section.items.map((item) => (
               <Link
-                key={item.href}
+                key={`${section.id}:${item.href}`}
                 href={item.href}
                 className="rounded-xl border border-slate-100 px-3 py-2 transition-colors hover:border-cyan-400 dark:border-slate-800"
               >

@@ -184,6 +184,12 @@ export default function EmployeesPage() {
                     <td className="px-3 py-2">
                       <div className="flex gap-2 flex-wrap">
                         <Link
+                          href={`/employee-dashboard?employeeId=${item._id}`}
+                          className="rounded-md border border-indigo-300 bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-600/50 dark:bg-indigo-950/30 dark:text-indigo-300 dark:hover:bg-indigo-950/50 transition-colors"
+                        >
+                          Dashboard
+                        </Link>
+                        <Link
                           href={`/employees/${item._id}/view`}
                           className="rounded-md border border-cyan-300 px-2 py-1 text-xs font-medium text-cyan-700 hover:bg-cyan-50 dark:border-cyan-600 dark:text-cyan-300 dark:hover:bg-cyan-950/20"
                         >

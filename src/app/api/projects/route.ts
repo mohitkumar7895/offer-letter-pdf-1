@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import { handleApiError, jsonError } from "@/lib/apiResponse";
+import { requireAuth } from "@/lib/apiAuth";
 import { requireModuleAuth, mapDocs } from "@/lib/modules/apiHelpers";
 import {
   parseListQuery,
@@ -14,11 +15,16 @@ import { projectCreateSchema } from "@/lib/modules/schemas";
 import { syncProjectLinks } from "@/lib/modules/projectLinks";
 import { logAudit, getClientIp } from "@/lib/audit";
 import { createNotification } from "@/lib/notifications";
+import {
+  employeeOwnsClient,
+  getEmployeeClientIds,
+} from "@/lib/modules/customerOwnership";
 import Project from "@/models/modules/Project";
 import { CustomerActivity } from "@/models/modules/CustomerActivity";
 
 export async function GET(request: Request) {
-  const auth = await requireModuleAuth("project");
+  // Employees need read-only project lookup for payment auto-fill on their customers
+  const auth = await requireAuth(["Admin", "HR", "TL", "Employee"]);
   if ("error" in auth) return auth.error;
 
   try {
@@ -30,9 +36,22 @@ export async function GET(request: Request) {
     const filter: Record<string, unknown> = {
       ...buildSoftDeleteFilter(q.includeDeleted || false),
       ...(q.status && q.status !== "All" ? { status: q.status } : {}),
-      ...(clientId ? { clientId } : {}),
       ...buildSearchFilter(q.search || "", ["name", "description"]),
     };
+
+    if (auth.user.role === "Employee") {
+      const owned = await getEmployeeClientIds(auth.user.userId);
+      if (clientId) {
+        if (!owned.includes(clientId) && !(await employeeOwnsClient(auth.user.userId, clientId))) {
+          return jsonError("You can only view projects for your assigned customers", 403);
+        }
+        filter.clientId = clientId;
+      } else {
+        filter.clientId = { $in: owned };
+      }
+    } else if (clientId) {
+      filter.clientId = clientId;
+    }
 
     const total = await Project.countDocuments(filter);
     const items = await Project.find(filter)

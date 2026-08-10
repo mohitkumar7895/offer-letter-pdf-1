@@ -53,7 +53,7 @@ export async function POST(req: Request) {
       sessionId: String(session._id),
     });
 
-    const redirectTo = role === "TL" ? "/tl-dashboard" : "/employee-dashboard";
+    const redirectTo = role === "TL" ? "/tl-dashboard" : "/sales/dashboard";
     const res = NextResponse.json({
       ok: true,
       redirectTo,

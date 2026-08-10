@@ -41,7 +41,7 @@ const KPI_CARDS: {
   { key: "officeExpenses", title: "Office Expenses", icon: "FileText", color: "orange", money: true },
   { key: "staffExpenses", title: "Staff Expenses", icon: "TrendingUp", color: "orange", money: true },
   { key: "totalLeads", title: "Total Leads", icon: "Users", color: "indigo" },
-  { key: "convertedLeads", title: "Converted Leads", icon: "Shield", color: "green" },
+  { key: "convertedLeads", title: "Closed Leads", icon: "Shield", color: "green" },
   { key: "maintenanceCustomers", title: "Maintenance Active", icon: "Briefcase", color: "orange" },
   { key: "monthlyServices", title: "Monthly Services", icon: "Clock", color: "indigo" },
   { key: "pendingTasks", title: "Pending Tasks", icon: "FileText", color: "orange" },

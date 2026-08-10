@@ -19,14 +19,35 @@ export async function GET(request: Request) {
       ...(q.status && q.status !== "All" ? { status: q.status } : {}),
       ...buildSearchFilter(q.search || "", ["title", "description"]),
     };
+    const url = new URL(request.url);
     if (auth.user.role === "Employee") {
       filter.assignedStaffIds = auth.user.userId;
     } else if (auth.user.role === "TL") {
       const teamIds = await getTlTeamIds(auth.user.userId, auth.user.email);
-      filter.$or = [
-        { assignedStaffIds: { $in: teamIds } },
-        { createdBy: auth.user.userId },
-      ];
+      // TL can request a specific staffId as long as it's in their team
+      const requestedStaffId = url.searchParams.get("staffId");
+      if (requestedStaffId) {
+         if (teamIds.includes(requestedStaffId)) {
+           filter.assignedStaffIds = requestedStaffId;
+         } else {
+           // Fallback to viewing own team
+           filter.$or = [
+             { assignedStaffIds: { $in: teamIds } },
+             { createdBy: auth.user.userId },
+           ];
+         }
+      } else {
+        filter.$or = [
+          { assignedStaffIds: { $in: teamIds } },
+          { createdBy: auth.user.userId },
+        ];
+      }
+    } else {
+      // Admin / HR
+      const requestedStaffId = url.searchParams.get("staffId");
+      if (requestedStaffId) {
+        filter.assignedStaffIds = requestedStaffId;
+      }
     }
     const [total, items] = await Promise.all([
       Task.countDocuments(filter),

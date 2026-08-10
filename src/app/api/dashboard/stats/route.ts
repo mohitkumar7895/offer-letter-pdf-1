@@ -86,7 +86,7 @@ export async function GET() {
       MaintenanceService.countDocuments({ ...notDeleted, status: "Active" }),
       MaintenanceService.countDocuments({ ...notDeleted, serviceType: "Monthly Service", status: "Active" }),
       Lead.countDocuments(notDeleted),
-      Lead.countDocuments({ ...notDeleted, status: "Converted" }),
+      Lead.countDocuments({ ...notDeleted, status: "Closed" }),
       Task.countDocuments({ ...notDeleted, status: { $in: ["Pending", "In Progress", "Overdue"] } }),
       Renewal.countDocuments({ ...notDeleted, renewalDate: { $gte: now, $lte: in30Days } }),
       Lead.aggregate([{ $match: notDeleted }, { $group: { _id: "$status", count: { $sum: 1 } } }]),

@@ -22,11 +22,21 @@ export async function GET(request: Request) {
   try {
     await connectDB();
     const q = parseListQuery(request.url);
-    const filter = {
+    const filter: Record<string, unknown> = {
       ...buildSoftDeleteFilter(q.includeDeleted || false),
       ...(q.status && q.status !== "All" ? { status: q.status } : {}),
       ...buildSearchFilter(q.search || "", ["name", "email", "phone", "company"]),
     };
+
+    if (auth.user.role === "Employee") {
+      filter.assignedTo = auth.user.userId;
+    } else {
+      const url = new URL(request.url);
+      const requestedStaffId = url.searchParams.get("assignedTo");
+      if (requestedStaffId) {
+        filter.assignedTo = requestedStaffId;
+      }
+    }
     const total = await Lead.countDocuments(filter);
     const items = await Lead.find(filter)
       .sort(buildSort(q.sortBy || "createdAt", q.sortOrder || "desc"))
@@ -50,8 +60,17 @@ export async function POST(request: Request) {
     if (!parsed.success) return jsonError("Invalid lead data", 400);
 
     await connectDB();
+    
+    // Assign to the creator by default if they are an employee, unless specified
+    let assignedTo = parsed.data.assignedTo || "";
+    if (!assignedTo && auth.user.role === "Employee") {
+      assignedTo = auth.user.userId;
+    }
+
     const item = await Lead.create({
       ...parsed.data,
+      assignedTo,
+      assignedToName: parsed.data.assignedToName || (assignedTo === auth.user.userId ? auth.user.name : ""),
       createdBy: auth.user.userId,
       updatedBy: auth.user.userId,
     });

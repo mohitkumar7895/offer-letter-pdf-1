@@ -11,7 +11,7 @@ const updateClientSchema = clientPayloadSchema.partial().refine((payload) => Obj
 });
 
 export async function GET(_request: Request, ctx: RouteContext<"/api/clients/[id]">) {
-  const auth = await requireAuth(["Admin", "HR", "TL"]);
+  const auth = await requireAuth(["Admin", "HR", "TL", "Employee"]);
   if ("error" in auth) return auth.error;
 
   try {
