@@ -331,7 +331,7 @@ function SalesWidget({ employeeId }: { employeeId: string }) {
       <div className="flex flex-wrap gap-4">
         <a href="/sales/leads" className={btnPrimary}>Go to Leads Dashboard</a>
         <a href="/clients" className={btnSecondary}>View My Customers</a>
-        <button type="button" onClick={() => setShowPaymentModal(true)} className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:bg-emerald-500 dark:hover:bg-emerald-400">
+        <button type="button" onClick={() => setShowPaymentModal(true)} className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:bg-emerald-500 dark:hover:bg-emerald-400">
           Record Payment
         </button>
       </div>

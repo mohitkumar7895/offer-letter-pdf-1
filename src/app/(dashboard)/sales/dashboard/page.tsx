@@ -195,7 +195,7 @@ export default function SalesDashboardPage() {
           ]}
         />
 
-        <header className="rounded-2xl border border-slate-200 bg-gradient-to-br from-cyan-50 to-white p-6 dark:border-slate-800 dark:from-cyan-950/40 dark:to-slate-900">
+        <header className="rounded-2xl border border-slate-200 bg-linear-to-br from-cyan-50 to-white p-6 dark:border-slate-800 dark:from-cyan-950/40 dark:to-slate-900">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
@@ -305,7 +305,7 @@ export default function SalesDashboardPage() {
                     </p>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full min-w-[900px] text-left text-sm">
+                      <table className="w-full min-w-225 text-left text-sm">
                         <thead>
                           <tr className="border-b border-slate-100 text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800">
                             <th className="px-4 py-3">Employee</th>

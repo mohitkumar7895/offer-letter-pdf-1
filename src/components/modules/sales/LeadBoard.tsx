@@ -23,7 +23,7 @@ type Lead = {
   source?: string;
   expectedValue?: number;
   assignedToName?: string;
-  nextFollowUpDate?: string;
+  nextFollowUpDate?: string | null;
   createdAt?: string;
 };
 
