@@ -46,6 +46,15 @@ const DEVELOPER_ROLES = [
   "UI/UX Designer",
 ];
 
+const IT_ROLES = [
+  "IT Support Specialist",
+  "System Administrator",
+  "Network Engineer",
+  "IT Manager",
+  "Helpdesk Executive",
+  "Database Administrator",
+];
+
 interface Department {
   _id: string;
   name: string;
@@ -64,6 +73,8 @@ const existingFileClass =
 function guessCategory(designation: string): string {
   if (MANAGEMENT_ROLES.includes(designation)) return "Management";
   if (DEVELOPER_ROLES.includes(designation)) return "Development";
+  if (designation === "Sales") return "Sales";
+  if (IT_ROLES.includes(designation)) return "IT";
   if (designation) return "Other";
   return "";
 }
@@ -195,7 +206,11 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
   function handleCategoryChange(cat: string) {
     setDeptCategory(cat);
     setDeptRole("");
-    setValue("designation", "", { shouldValidate: false });
+    if (cat === "Sales") {
+      setValue("designation", "Sales", { shouldValidate: true });
+    } else {
+      setValue("designation", "", { shouldValidate: false });
+    }
   }
 
   function handleRoleChange(role: string) {
@@ -380,10 +395,13 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             </div>
 
             {/* Dropdown 2 — Role (Department roles or Global roles as fallback) */}
-            {deptCategory && (
+            {deptCategory === "Sales" && (
+              <input type="hidden" {...register("designation")} value="Sales" />
+            )}
+            {deptCategory && deptCategory !== "Sales" && deptCategory !== "Other" && (
               <div className="min-w-0">
                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
-                  {deptCategory === "Other" ? "Global Role" : `${deptCategory} Role`}
+                  {deptCategory} Role
                 </label>
                 <select
                   className={selectClass}
@@ -406,7 +424,7 @@ export function EmployeeForm({ mode, initial, loading, onSubmit }: Props) {
             )}
 
             {/* Fallback Designation Title Input */}
-            {(!deptCategory || (deptCategory === "Other" && roleOptions.length === 0)) && (
+            {(!deptCategory || deptCategory === "Other") && (
               <div className="min-w-0">
                 <label className="block text-xs text-slate-500 dark:text-slate-400 mb-1">
                   Designation Title
