@@ -7,7 +7,7 @@ import { fetchJsonCached, invalidateCachedUrl } from "@/lib/clientDataCache";
 import { moduleBreadcrumbs, MODULE_REGISTRY } from "@/lib/navigation";
 import { Breadcrumb } from "@/components/modules/Breadcrumb";
 import { LEAD_SOURCES, LEAD_STATUSES } from "@/types/modules/constants";
-import { LeadBoard } from "@/components/modules/sales/LeadBoard";
+import { LeadBoard, type LeadBoardItem } from "@/components/modules/sales/LeadBoard";
 import { LeadDetailPanel } from "@/components/modules/sales/LeadDetailPanel";
 import {
   btnPrimary,
@@ -20,21 +20,7 @@ import { useDebouncedValue } from "@/lib/hooks/useDebouncedValue";
 
 const mod = MODULE_REGISTRY.leads;
 
-type Lead = {
-  _id: string;
-  name: string;
-  phone?: string;
-  email?: string;
-  company?: string;
-  status?: string;
-  source?: string;
-  expectedValue?: number;
-  assignedTo?: string;
-  assignedToName?: string;
-  nextFollowUpDate?: string | null;
-  notes?: string;
-  createdAt?: string;
-};
+type Lead = LeadBoardItem;
 
 type ViewMode = "list" | "board";
 

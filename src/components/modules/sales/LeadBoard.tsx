@@ -13,7 +13,8 @@ const PIPELINE_STATUSES = [
   "Closed",
 ] as const;
 
-type Lead = {
+/** Shared lead row shape for list/board (API may return null dates). */
+export type LeadBoardItem = {
   _id: string;
   name: string;
   phone?: string;
@@ -22,8 +23,10 @@ type Lead = {
   status?: string;
   source?: string;
   expectedValue?: number;
+  assignedTo?: string;
   assignedToName?: string;
   nextFollowUpDate?: string | null;
+  notes?: string;
   createdAt?: string;
 };
 
@@ -31,11 +34,11 @@ export function LeadBoard({
   leads,
   onLeadClick,
 }: {
-  leads: Lead[];
+  leads: LeadBoardItem[];
   onLeadClick: (leadId: string) => void;
 }) {
   const columns = useMemo(() => {
-    const cols: Record<string, Lead[]> = {};
+    const cols: Record<string, LeadBoardItem[]> = {};
     for (const s of PIPELINE_STATUSES) cols[s] = [];
     cols.Other = [];
 
